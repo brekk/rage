@@ -1,0 +1,11 @@
+import Wish from "Wish"
+
+import { git } from "@/External"
+
+
+
+export clone = pipe(
+  of,
+  mappend(["clone"]),
+  git,
+)

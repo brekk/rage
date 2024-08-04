@@ -1,0 +1,36 @@
+import Wish from "Wish"
+
+
+
+export type Project = Library | Tool | Other
+
+/*
+name :: String - the name of the project 
+description :: String - a description of the project
+repo :: String - the owner/repo path 
+template :: String - the project repo to pull from 
+ignore :: String - a path to pull a .gitignore value from 
+useImportAliases :: Boolean - do we wanna use import aliases? 
+kind :: Project - what kind of project is this? 
+*/
+export alias ProjectDef = {
+  description :: String,
+  ignore :: String,
+  kind :: Project,
+  name :: String,
+  repo :: String,
+  template :: String,
+  useImportAliases :: Boolean,
+}
+
+export type ProjectError = InvalidRepo | InvalidTemplate | InvalidIgnore | GenericError
+
+create :: ProjectDef -> Wish ProjectError String
+export create = (def) => {
+  // 1. pull down the template repo (git clone)
+  // 2. change directory (cd <project>)
+  // 3. pull down the .gitignore file (curl path > .gitignore)
+  // 4. update the madlib.json file
+  // 5. update the README.md
+  return Wish.good("")
+}

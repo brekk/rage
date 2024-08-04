@@ -1,0 +1,33 @@
+import { noop } from "Function"
+import IO from "IO"
+import List from "List"
+import Wish from "Wish"
+
+import Ext from "@/External"
+
+
+
+main = () => {
+  deliver = Wish.fulfill(
+    pipe(
+      IO.pTrace("BAD"),
+      noop,
+    ),
+    pipe(
+      IO.pTrace("GOOD"),
+      noop,
+    ),
+  )
+  // make a directory
+
+  pipe(
+    Ext.log_mkdir,
+    deliver,
+  )(["-p", "directory-directory"])
+  // delete a directory
+
+  pipe(
+    Ext.log_rimraf,
+    deliver,
+  )("directory-directory")
+}

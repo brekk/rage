@@ -1,0 +1,39 @@
+import type { CommandResult } from "Process"
+import type { Wish } from "Wish"
+
+import IO from "IO"
+import { DEFAULT_COMMAND_OPTIONS, exec } from "Process"
+import { join } from "String"
+
+
+
+run = exec($, $, DEFAULT_COMMAND_OPTIONS)
+
+perform :: String -> List String -> Wish CommandResult CommandResult
+export perform = (cmd, args) => {
+  IO.putLine(`▸ ${IO.green(cmd)} ${IO.yellow(join(" ", args))}`)
+  return run(cmd, args)
+}
+
+export curl = run("curl")
+export log_curl = perform("curl")
+
+export git = run("git")
+export log_git = perform("git")
+
+export rm = run("rm")
+export log_rm = perform("rm")
+
+export rimraf = pipe(
+  of,
+  mappend(["-rf"]),
+  rm,
+)
+export log_rimraf = pipe(
+  of,
+  mappend(["-rf"]),
+  log_rm,
+)
+
+export mkdir = run("mkdir")
+export log_mkdir = perform("mkdir")
