@@ -1,8 +1,9 @@
-import type { Flag } from "@/Args"
+// import type { Flag } from "@/Args"
 
-import { noop } from "Function"
+import { flip, noop } from "Function"
 import IO from "IO"
 import List from "List"
+import { Just, Nothing } from "Maybe"
 import String from "String"
 import Wish from "Wish"
 
@@ -11,32 +12,68 @@ import Ext from "@/External"
 
 
 
+type Flag = FlagBool(String) | FlagNoBool(String) | FlagString(String, String) | Huh
+
 main = (rawArgs) => {
   pipe(
     List.drop(1),
-    List.reduce((stack, step) => List.append(processArg(step), stack), []),
+    map(processArg),
+    IO.pTrace("basic arg processing"),
+    (steps) => List.reduce(
+      (agg, curr) => {
+        // we're processing a list of lists, one access offset
+        currentIsSingle = List.length(curr) == 1
+        return where(agg.prev) {
+          Just(prev) =>
+            do {
+              previousIsSingle = List.length(prev) == 1
+              return if (!previousIsSingle) {
+                {
+                  prev: Just(curr),
+                  stack: List.concat(
+                    agg.stack,
+                    map(
+                      pipe(
+                        String.drop(1),
+                        FlagBool,
+                      ),
+                      prev,
+                    ),
+                  ),
+                }
+              } else do {
+                IO.pTrace("...", prev)
+                return where(List.nth(0, prev)) {
+                  Just(firstPrev) =>
+                    String.startsWith("-", firstPrev)
+                      ? (
+                        {
+                          prev: Just(curr),
+                          stack: List.append(FlagBool(String.drop(1, firstPrev)), agg.stack),
+                        }
+                      )
+                      : String.startsWith("!", firstPrev)
+                        ? (
+                          {
+                            prev: Just(curr),
+                            stack: List.append(FlagNoBool(String.drop(1, firstPrev)), agg.stack),
+                          }
+                        )
+                        : agg
+
+                  _ =>
+                    agg
+                }
+              }
+            }
+
+          Nothing =>
+            agg
+        }
+      },
+      { stack: [], prev: List.nth(0, steps) },
+      List.tail(steps),
+    ),
     IO.pTrace("args!"),
   )(rawArgs)
-  /*
-              deliver = Wish.fulfill(
-                pipe(
-                  IO.pTrace("BAD"),
-                  noop,
-                ),
-                pipe(
-                  IO.pTrace("GOOD"),
-                  noop,
-                ),
-              )
-              */
-  // make a directory
-  // pipe(
-  //   Ext.log_mkdir,
-  //   deliver,
-  // )(["-p", "directory-directory"])
-  // delete a directory
-  // pipe(
-  //   Ext.log_rimraf,
-  //   deliver,
-  // )("directory-directory")
 }

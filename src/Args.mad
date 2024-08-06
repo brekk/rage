@@ -44,6 +44,9 @@ convertShortFlag = where {
 }
 */
 
+LONG_FLAG = "--"
+SHORT_FLAG = "-"
+
 // processShortFlag :: String -> List Flag
 export processShortFlag = pipe(
   String.drop(1),
@@ -55,16 +58,18 @@ export processShortFlag = pipe(
     String.split(""),
     of,
   ),
+  map(String.prependChar('-')),
 )
 
 export processLongFlag = pipe(
   String.drop(2),
-  when(
+  ifElse(
     String.startsWith("no-"),
     pipe(
       String.drop(3),
       mappend("!"),
     ),
+    mappend("$"),
   ),
   of,
 )
@@ -73,9 +78,7 @@ export handleRawValue = of
 
 // processArg :: String -> List Flag
 export processArg = ifElse(
-  String.startsWith("--"),
+  String.startsWith(LONG_FLAG),
   processLongFlag,
-  ifElse(String.startsWith("-"), processShortFlag, handleRawValue),
+  ifElse(String.startsWith(SHORT_FLAG), processShortFlag, handleRawValue),
 )
-
-// */
