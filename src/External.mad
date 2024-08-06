@@ -7,9 +7,13 @@ import { join } from "String"
 
 
 
+export alias CommandWish = Wish CommandResult CommandResult
+
+
+
 run = exec($, $, DEFAULT_COMMAND_OPTIONS)
 
-perform :: String -> List String -> Wish CommandResult CommandResult
+perform :: String -> List String -> CommandWish
 export perform = (cmd, args) => {
   IO.putLine(`▸ ${IO.green(cmd)} ${IO.yellow(join(" ", args))}`)
   return run(cmd, args)
@@ -37,3 +41,6 @@ export log_rimraf = pipe(
 
 export mkdir = run("mkdir")
 export log_mkdir = perform("mkdir")
+
+export madlib = run("madlib")
+export log_madlib = perform("madlib")

@@ -1,6 +1,23 @@
-import Wish from "Wish"
+import type { Error } from "File"
+import type { Wish } from "Wish"
+
+import type { CommandWish } from "@/External"
+
+import { apL } from "Applicative"
+import File from "File"
+import { always, identity } from "Function"
+import { concat } from "List"
+import { good, mapRej } from "Wish"
+
+import Ext from "@/External"
+import { setRemote } from "@/Git"
 
 
+
+signal = (_bad, _good) => pipe(
+  mapRej(always(_bad)),
+  map(always(_good)),
+)
 
 export type Project = Library | Tool | Other
 
@@ -22,15 +39,161 @@ export alias ProjectDef = {
   template :: String,
   useImportAliases :: Boolean,
 }
+export alias RageDef = { ...ProjectDef, handleGit :: Boolean, log :: Boolean }
 
-export type ProjectError = InvalidRepo | InvalidTemplate | InvalidIgnore | GenericError
+export type ProjectError
+  = ScaffoldFail
+  | JsonNotUpdated
+  | ReadmeNotUpdated
+  | InvalidRepo
+  | InvalidTemplate
+  | InvalidIgnore
+  | GenericError
 
-create :: ProjectDef -> Wish ProjectError String
+export handleProjectError = where {
+  ScaffoldFail =>
+    "Unable to create project scaffold"
+
+  JsonNotUpdated =>
+    "Unable to update madlib.json"
+
+  ReadmeNotUpdated =>
+    "Unable to alter README.md"
+
+  InvalidRepo =>
+    "Given repo is not valid"
+
+  InvalidTemplate =>
+    "Given template repo is not valid"
+
+  InvalidIgnore =>
+    "Unable to copy the .gitignore file via curl"
+
+  GenericError =>
+    "The machine is sick"
+}
+
+export type ProjectStatus
+  = Scaffold
+  | GitIgnored
+  | JsonUpdated
+  | ReadmeUpdated
+  | RepoCreated
+  | RemoteSet
+  | Ready
+
+export handleProjectStatus = where {
+  Scaffold =>
+    "Created project via `madlib new`"
+
+  GitIgnored =>
+    "Pulled a .gitignore file via curl"
+
+  JsonUpdated =>
+    "Updated the madlib.json file"
+
+  ReadmeUpdated =>
+    "Updated the project README.md"
+
+  RepoCreated =>
+    "Created github repo programmatically"
+
+  RemoteSet =>
+    "Pushed project to git remote"
+
+  Ready =>
+    "Got mad, quickly"
+}
+
+export alias RageState = Wish ProjectError ProjectStatus
+
+_createMadlibProject :: RageDef -> CommandWish
+export _createMadlibProject = (def) => {
+  cmd = def.log ? Ext.log_madlib : Ext.madlib
+  return pipe(
+    .name,
+    of,
+    concat(["new"]),
+    cmd,
+  )(def)
+}
+
+createMadlibProject :: RageDef -> RageState
+export createMadlibProject = pipe(
+  _createMadlibProject,
+  signal(ScaffoldFail, Scaffold),
+)
+
+_pullGitignore :: RageDef -> CommandWish
+export _pullGitignore = (def) => {
+  cmd = (def.log ? Ext.curl : Ext.log_curl)
+  return cmd([def.ignore, "-o", `${def.name}/.gitignore`])
+}
+
+pullGitignore :: RageDef -> RageState
+export pullGitignore = pipe(
+  _pullGitignore,
+  signal(InvalidIgnore, GitIgnored),
+)
+
+_overwriteMadlibJson :: RageDef -> Wish Error {}
+export _overwriteMadlibJson = (def) => File.write(
+  `${def.name}/madlib.json`,
+  `{
+  "name": "${def.name}",
+  "version": "0.0.1",
+  "main": "src/Main.mad",
+  "importAliases": {
+    ".": "src"
+  }
+}`,
+)
+
+overwriteMadlibJson :: RageDef -> RageState
+export overwriteMadlibJson = pipe(
+  _overwriteMadlibJson,
+  signal(JsonNotUpdated, JsonUpdated),
+)
+
+_overwriteReadme :: RageDef -> Wish Error {}
+export _overwriteReadme = (def) => File.write(
+  `${def.name}/README.md`,
+  `# ${def.name}${def.description}`,
+)
+
+overwriteReadme :: RageDef -> RageState
+export overwriteReadme = pipe(
+  _overwriteReadme,
+  signal(ReadmeNotUpdated, ReadmeUpdated),
+)
+
+setGitRemote :: RageDef -> RageState
+setGitRemote = pipe(
+  .repo,
+  setRemote,
+  signal(InvalidRepo, RemoteSet),
+)
+
+runGitCommands :: RageDef -> RageState -> RageState
+runGitCommands = (def, s) => pipe(
+  apL(pullGitignore(def)),
+  apL(setGitRemote(def)),
+)(s)
+
+create :: RageDef -> RageState
 export create = (def) => {
-  // 1. pull down the template repo (git clone)
-  // 2. change directory (cd <project>)
+  return pipe(
+    createMadlibProject,
+    apL(overwriteMadlibJson(def)),
+    apL(overwriteReadme(def)),
+    def.handleGit ? runGitCommands(def) : identity,
+  )(def)
+  // 1. create a new madlib project (madlib new <project>)
+  // 2. change directory? (cd <project>)
   // 3. pull down the .gitignore file (curl path > .gitignore)
-  // 4. update the madlib.json file
-  // 5. update the README.md
-  return Wish.good("")
+  // 4. update the madlib.json file (raw fs.write)
+  // 5. update the README.md (raw fs.write)
+  // 6. set the remote origin (git remote add origin <repo>)
+  // 7. push it real good (git push --set-upstream origin main)
+  // return good("")
 }

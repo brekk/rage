@@ -1,33 +1,42 @@
+import type { Flag } from "@/Args"
+
 import { noop } from "Function"
 import IO from "IO"
 import List from "List"
+import String from "String"
 import Wish from "Wish"
 
+import { processArg } from "@/Args"
 import Ext from "@/External"
 
 
 
-main = () => {
-  deliver = Wish.fulfill(
-    pipe(
-      IO.pTrace("BAD"),
-      noop,
-    ),
-    pipe(
-      IO.pTrace("GOOD"),
-      noop,
-    ),
-  )
+main = (rawArgs) => {
+  pipe(
+    List.drop(1),
+    List.reduce((stack, step) => List.append(processArg(step), stack), []),
+    IO.pTrace("args!"),
+  )(rawArgs)
+  /*
+              deliver = Wish.fulfill(
+                pipe(
+                  IO.pTrace("BAD"),
+                  noop,
+                ),
+                pipe(
+                  IO.pTrace("GOOD"),
+                  noop,
+                ),
+              )
+              */
   // make a directory
-
-  pipe(
-    Ext.log_mkdir,
-    deliver,
-  )(["-p", "directory-directory"])
+  // pipe(
+  //   Ext.log_mkdir,
+  //   deliver,
+  // )(["-p", "directory-directory"])
   // delete a directory
-
-  pipe(
-    Ext.log_rimraf,
-    deliver,
-  )("directory-directory")
+  // pipe(
+  //   Ext.log_rimraf,
+  //   deliver,
+  // )("directory-directory")
 }

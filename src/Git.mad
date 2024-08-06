@@ -9,3 +9,9 @@ export clone = pipe(
   mappend(["clone"]),
   git,
 )
+
+export setRemote = (repo) => git(["remote", "add", "origin", repo])
+
+export pushUpstream = (origin, branch) => git(["push", "--set-upstream", origin, branch])
+
+export gpsup = pushUpstream("origin", "main")
