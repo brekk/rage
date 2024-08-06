@@ -15,35 +15,6 @@ export type Flag
   | Repo(String)
   | UseAliases(Boolean)
 
-// flagName :: Parser Flag
-// export flagName = do {
-//   _ <- string("--name")
-//   _ <- char(' ')
-//   name <- pipe(
-//     someTill(anyChar),
-//     map(
-//       pipe(
-//         fromList,
-//         trim,
-//       ),
-//     ),
-//   )(choice([char('-'), char(' ')]))
-//   return of(Name(name))
-// }
-/*
-convertShortFlag = where {
-  [f, x, ...rest] =>
-    [
-      (
-        x == "n" ? Name : x == "d" ? Description : x == "i" ? Ignore : x == "r" ? Repo,
-      ...convertShortFlag(rest),
-    ]
-  [f, x] => 
-  [] =>
-    []
-}
-*/
-
 LONG_FLAG = "--"
 SHORT_FLAG = "-"
 

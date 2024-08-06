@@ -22,15 +22,15 @@ main = (rawArgs) => {
     (steps) => List.reduce(
       (agg, curr) => {
         // we're processing a list of lists, one access offset
-        currentIsSingle = List.length(curr) == 1
+        next = Just(curr)
+        update = (stack) => ({ prev: next, stack })
         return where(agg.prev) {
           Just(prev) =>
             do {
               previousIsSingle = List.length(prev) == 1
               return if (!previousIsSingle) {
-                {
-                  prev: Just(curr),
-                  stack: List.concat(
+                update(
+                  List.concat(
                     agg.stack,
                     map(
                       pipe(
@@ -40,26 +40,35 @@ main = (rawArgs) => {
                       prev,
                     ),
                   ),
-                }
+                )
               } else do {
+                currentIsSingle = List.length(curr) == 1
                 IO.pTrace("...", prev)
                 return where(List.nth(0, prev)) {
                   Just(firstPrev) =>
-                    String.startsWith("-", firstPrev)
-                      ? (
-                        {
-                          prev: Just(curr),
-                          stack: List.append(FlagBool(String.drop(1, firstPrev)), agg.stack),
-                        }
-                      )
-                      : String.startsWith("!", firstPrev)
-                        ? (
-                          {
-                            prev: Just(curr),
-                            stack: List.append(FlagNoBool(String.drop(1, firstPrev)), agg.stack),
+                    do {
+                      fixed = String.drop(1, firstPrev)
+                      return if (String.startsWith("$", firstPrev)) {
+                        if (currentIsSingle) {
+                          where(List.nth(0, curr)) {
+                            Just(firstCurr) =>
+                              update(List.append(FlagString(fixed, firstCurr), agg.stack))
+
+                            _ =>
+                              agg
                           }
+                        } else {
+                          agg
+                        }
+                      } else {
+                        update(
+                          List.append(
+                            (String.startsWith("!", firstPrev) ? FlagNoBool : FlagBool)(fixed),
+                            agg.stack,
+                          ),
                         )
-                        : agg
+                      }
+                    }
 
                   _ =>
                     agg
@@ -74,6 +83,7 @@ main = (rawArgs) => {
       { stack: [], prev: List.nth(0, steps) },
       List.tail(steps),
     ),
+    .stack,
     IO.pTrace("args!"),
   )(rawArgs)
 }
