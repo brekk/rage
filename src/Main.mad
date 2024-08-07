@@ -7,7 +7,8 @@ import { Just, Nothing } from "Maybe"
 import String from "String"
 import Wish from "Wish"
 
-import { convertFlags } from "@/Args"
+import { parseFlags } from "Ensign"
+
 import Ext from "@/External"
 
 
@@ -16,7 +17,7 @@ main = (rawArgs) => {
   pipe(
     List.drop(1),
     IO.pTrace("RAW ARGS"),
-    convertFlags,
+    parseFlags,
     IO.pTrace("args!"),
   )(rawArgs)
 }
