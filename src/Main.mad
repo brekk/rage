@@ -9,6 +9,7 @@ import Wish from "Wish"
 
 import { parseFlags } from "Ensign"
 
+import { postParse } from "@/Args"
 import Ext from "@/External"
 
 
@@ -19,5 +20,7 @@ main = (rawArgs) => {
     IO.pTrace("RAW ARGS"),
     parseFlags,
     IO.pTrace("args!"),
+    postParse,
+    IO.pTrace("posted parsies!"),
   )(rawArgs)
 }

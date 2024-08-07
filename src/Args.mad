@@ -1,0 +1,53 @@
+import type { Flag } from "Ensign"
+
+import List from "List"
+
+import { Flag, FlagOff, FlagOn } from "Ensign"
+
+import { Other } from "@/Rage"
+
+
+
+export postParse = List.reduce(
+  (agg, flag) => where(flag) {
+    FlagOff(key) =>
+      if (key == "aliases") {
+        { ...agg, useImportAliases: false }
+      } else if (key == "git") {
+        { ...agg, handleGit: false }
+      } else if (key == "log") {
+        { ...agg, log: false }
+      } else {
+        agg
+      }
+
+    Flag(key, value) =>
+      if (key == "desc" || key == "d") {
+        { ...agg, description: value }
+      } else if (key == "ignore" || key == "i") {
+        { ...agg, ignore: value }
+      } else if (key == "name" || key == "n") {
+        { ...agg, name: value }
+      } else if (key == "repo" || key == "r") {
+        { ...agg, repo: value }
+      } else if (key == "template" || key == "t") {
+        { ...agg, template: value }
+      } else {
+        agg
+      }
+
+    _ =>
+      agg
+  },
+  {
+    description: "",
+    ignore: "",
+    kind: Other,
+    name: "",
+    repo: "",
+    template: "",
+    useImportAliases: true,
+    handleGit: true,
+    log: true,
+  },
+)
