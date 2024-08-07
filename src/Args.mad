@@ -2,13 +2,22 @@ import type { Parser } from "Parse"
 
 import { gt } from "Compare"
 import { identity, ifElse, when } from "Function"
+import IO from "IO"
+import List from "List"
+import { Just, Nothing } from "Maybe"
 import { anyChar, char, choice, eof, someTill, string } from "Parse"
 import String from "String"
 import { fromList, trim } from "String"
 
 
 
-export type Flag
+type Flag = FlagBool(String) | FlagNoBool(String) | FlagString(String, String)
+isStringFlag = String.startsWith("$")
+isNegated = String.startsWith("!")
+isShortFlag = String.startsWith("-")
+isFlag = (x) => isStringFlag(x) || isNegated(x) || isShortFlag(x)
+
+export type Specific
   = Name(String)
   | Description(String)
   | Ignore(String)
@@ -52,4 +61,81 @@ export processArg = ifElse(
   String.startsWith(LONG_FLAG),
   processLongFlag,
   ifElse(String.startsWith(SHORT_FLAG), processShortFlag, handleRawValue),
+)
+
+handleMultipleBooleanFlags = (stack, x) => List.concat(
+  stack,
+  map(
+    pipe(
+      String.drop(1),
+      FlagBool,
+    ),
+    x,
+  ),
+)
+
+handleStringFlag = (stack, curr, fixed) => where(List.nth(0, curr)) {
+  Just(firstCurr) =>
+    !isFlag(firstCurr) ? List.append(FlagString(fixed, firstCurr), stack) : stack
+
+  _ =>
+    stack
+}
+
+
+handleBooleanFlag = (stack, prev, fixed) => !isFlag(prev)
+  ? stack
+  : List.append((isNegated(prev) ? FlagNoBool : FlagBool)(fixed), stack)
+
+handleOtherFlags = (stack, prev, current) => do {
+  fixed = String.drop(1, prev)
+  currentIsSingle = List.length(current) == 1
+  return if (isStringFlag(prev) || isShortFlag(prev) && currentIsSingle) {
+    if (currentIsSingle) {
+      handleStringFlag(stack, current, fixed)
+    } else {
+      stack
+    }
+  } else {
+    where(List.nth(0, current)) {
+      Just(firstCurr) =>
+        handleBooleanFlag(stack, prev, fixed)
+
+      _ =>
+        stack
+    }
+  }
+}
+
+updateStack = (stack, maybePrevious, current) => where(maybePrevious) {
+  Just(previous) =>
+    do {
+      previousIsSingle = List.length(previous) == 1
+      return if (!previousIsSingle) {
+        handleMultipleBooleanFlags(stack, previous)
+      } else {
+        where(List.nth(0, previous)) {
+          Just(x) =>
+            handleOtherFlags(stack, x, current)
+
+          Nothing =>
+            stack
+        }
+      }
+    }
+
+  Nothing =>
+    stack
+}
+
+convertFlags :: List String -> List Flag
+export convertFlags = pipe(
+  map(processArg),
+  IO.pTrace("post-process"),
+  (steps) => List.reduce(
+    (agg, curr) => ({ prev: Just(curr), stack: updateStack(agg.stack, agg.prev, curr) }),
+    { stack: [], prev: List.nth(0, steps) },
+    List.tail(steps),
+  ),
+  .stack,
 )

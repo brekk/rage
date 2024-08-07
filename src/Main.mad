@@ -7,106 +7,16 @@ import { Just, Nothing } from "Maybe"
 import String from "String"
 import Wish from "Wish"
 
-import { processArg } from "@/Args"
+import { convertFlags } from "@/Args"
 import Ext from "@/External"
 
 
 
-type Flag = FlagBool(String) | FlagNoBool(String) | FlagString(String, String) | Huh
-
-isFlag = (x) => String.startsWith("$", x) || String.startsWith("!", x) || String.startsWith("-", x)
-
 main = (rawArgs) => {
   pipe(
     List.drop(1),
-    map(processArg),
-    IO.pTrace("basic arg processing"),
-    (steps) => List.reduce(
-      (agg, curr) => {
-        IO.pTrace("▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚", #[agg.prev, curr])
-        // we're processing a list of lists, one access offset
-        next = Just(curr)
-        update = (stack) => ({ prev: next, stack })
-        return where(agg.prev) {
-          Just(prev) =>
-            do {
-              previousIsSingle = List.length(prev) == 1
-              return if (!previousIsSingle) {
-                update(
-                  List.concat(
-                    agg.stack,
-                    map(
-                      pipe(
-                        String.drop(1),
-                        FlagBool,
-                      ),
-                      prev,
-                    ),
-                  ),
-                )
-              } else do {
-                currentIsSingle = List.length(curr) == 1
-                return where(List.nth(0, prev)) {
-                  Nothing =>
-                    agg
-
-                  Just(firstPrev) =>
-                    do {
-                      prevIsFlag = isFlag(firstPrev)
-                      fixed = String.drop(1, firstPrev)
-                      return if (
-                        String.startsWith("$", firstPrev)
-                          || String.startsWith("-", firstPrev)
-                          && currentIsSingle
-                      ) {
-                        if (currentIsSingle) {
-                          where(List.nth(0, curr)) {
-                            Just(firstCurr) =>
-                              do {
-                                return !isFlag(firstCurr)
-                                  ? update(List.append(FlagString(fixed, firstCurr), agg.stack))
-                                  : agg
-                              }
-
-                            _ =>
-                              agg
-                          }
-                        } else {
-                          agg
-                        }
-                      } else do {
-                        return where(List.nth(0, curr)) {
-                          Just(firstCurr) =>
-                            if (!isFlag(firstPrev)) do {
-                              return update(agg.stack)
-                            } else {
-                              update(
-                                List.append(
-                                  (String.startsWith("!", firstPrev) ? FlagNoBool : FlagBool)(
-                                    fixed,
-                                  ),
-                                  agg.stack,
-                                ),
-                              )
-                            }
-
-                          _ =>
-                            agg
-                        }
-                      }
-                    }
-                }
-              }
-            }
-
-          Nothing =>
-            agg
-        }
-      },
-      { stack: [], prev: List.nth(0, steps) },
-      List.tail(steps),
-    ),
-    .stack,
+    IO.pTrace("RAW ARGS"),
+    convertFlags,
     IO.pTrace("args!"),
   )(rawArgs)
 }
