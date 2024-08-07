@@ -11,11 +11,11 @@ import { fromList, trim } from "String"
 
 
 
-type Flag = FlagBool(String) | FlagNoBool(String) | FlagString(String, String)
-isStringFlag = String.startsWith("$")
-isNegated = String.startsWith("!")
+type Flag = FlagOn(String) | FlagOff(String) | Flag(String, String)
+isStringFlag = String.startsWith("--")
+isNegated = String.startsWith("--no-")
 isShortFlag = String.startsWith("-")
-isFlag = (x) => isStringFlag(x) || isNegated(x) || isShortFlag(x)
+isFlag = (x) => isShortFlag(x) || isStringFlag(x) || isNegated(x)
 
 export type Specific
   = Name(String)
@@ -24,51 +24,22 @@ export type Specific
   | Repo(String)
   | UseAliases(Boolean)
 
-LONG_FLAG = "--"
-SHORT_FLAG = "-"
-
-// processShortFlag :: String -> List Flag
-export processShortFlag = pipe(
-  String.drop(1),
-  ifElse(
-    pipe(
-      String.length,
-      gt($, 1),
-    ),
-    String.split(""),
-    of,
-  ),
-  map(String.prependChar('-')),
-)
-
-export processLongFlag = pipe(
-  String.drop(2),
-  ifElse(
-    String.startsWith("no-"),
-    pipe(
-      String.drop(3),
-      mappend("!"),
-    ),
-    mappend("$"),
-  ),
-  of,
-)
-
-export handleRawValue = of
-
-// processArg :: String -> List Flag
-export processArg = ifElse(
-  String.startsWith(LONG_FLAG),
-  processLongFlag,
-  ifElse(String.startsWith(SHORT_FLAG), processShortFlag, handleRawValue),
-)
+splitJointFlags = (x) => String.includes('=', x)
+  ? String.split("=", x)
+  : isShortFlag(x) && !isStringFlag(x)
+    ? pipe(
+      String.drop(1),
+      String.split(""),
+      map(mappend("-")),
+    )(x)
+    : of(x)
 
 handleMultipleBooleanFlags = (stack, x) => List.concat(
   stack,
   map(
     pipe(
       String.drop(1),
-      FlagBool,
+      FlagOn,
     ),
     x,
   ),
@@ -76,7 +47,7 @@ handleMultipleBooleanFlags = (stack, x) => List.concat(
 
 handleStringFlag = (stack, curr, fixed) => where(List.nth(0, curr)) {
   Just(firstCurr) =>
-    !isFlag(firstCurr) ? List.append(FlagString(fixed, firstCurr), stack) : stack
+    !isFlag(firstCurr) ? List.append(Flag(fixed, firstCurr), stack) : stack
 
   _ =>
     stack
@@ -85,19 +56,23 @@ handleStringFlag = (stack, curr, fixed) => where(List.nth(0, curr)) {
 
 handleBooleanFlag = (stack, prev, fixed) => !isFlag(prev)
   ? stack
-  : List.append((isNegated(prev) ? FlagNoBool : FlagBool)(fixed), stack)
+  : List.append((isNegated(prev) ? FlagOff : FlagOn)(fixed), stack)
+
+cleanFlag = ifElse(isNegated, String.drop(5), ifElse(isStringFlag, String.drop(2), String.drop(1)))
 
 handleOtherFlags = (stack, prev, current) => do {
-  fixed = String.drop(1, prev)
+  fixed = cleanFlag(prev)
   currentIsSingle = List.length(current) == 1
-  return if (isStringFlag(prev) || isShortFlag(prev) && currentIsSingle) {
-    if (currentIsSingle) {
+  return if (isStringFlag(prev) || isShortFlag(prev) && currentIsSingle) do {
+    return if (isNegated(prev)) {
+      List.append(FlagOff(fixed), stack)
+    } else if (currentIsSingle) {
       handleStringFlag(stack, current, fixed)
     } else {
       stack
     }
-  } else {
-    where(List.nth(0, current)) {
+  } else do {
+    return where(List.nth(0, current)) {
       Just(firstCurr) =>
         handleBooleanFlag(stack, prev, fixed)
 
@@ -111,8 +86,19 @@ updateStack = (stack, maybePrevious, current) => where(maybePrevious) {
   Just(previous) =>
     do {
       previousIsSingle = List.length(previous) == 1
-      return if (!previousIsSingle) {
+      previousIsPair = List.length(previous) == 2
+      return if (!previousIsSingle && !previousIsPair) {
         handleMultipleBooleanFlags(stack, previous)
+      } else if (previousIsPair) {
+        where(previous) {
+          [k, v] =>
+            isFlag(k) && !isFlag(v)
+              ? List.append(Flag(cleanFlag(k), v), stack)
+              : handleMultipleBooleanFlags(stack, previous)
+
+          _ =>
+            stack
+        }
       } else {
         where(List.nth(0, previous)) {
           Just(x) =>
@@ -130,12 +116,12 @@ updateStack = (stack, maybePrevious, current) => where(maybePrevious) {
 
 convertFlags :: List String -> List Flag
 export convertFlags = pipe(
-  map(processArg),
-  IO.pTrace("post-process"),
+  map(splitJointFlags),
   (steps) => List.reduce(
     (agg, curr) => ({ prev: Just(curr), stack: updateStack(agg.stack, agg.prev, curr) }),
     { stack: [], prev: List.nth(0, steps) },
-    List.tail(steps),
+    // stuff an empty value at the end so we process all entries
+    List.append([], List.tail(steps)),
   ),
   .stack,
 )
