@@ -14,6 +14,8 @@ import Ext from "@/External"
 
 type Flag = FlagBool(String) | FlagNoBool(String) | FlagString(String, String) | Huh
 
+isFlag = (x) => String.startsWith("$", x) || String.startsWith("!", x) || String.startsWith("-", x)
+
 main = (rawArgs) => {
   pipe(
     List.drop(1),
@@ -21,6 +23,7 @@ main = (rawArgs) => {
     IO.pTrace("basic arg processing"),
     (steps) => List.reduce(
       (agg, curr) => {
+        IO.pTrace("▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚", #[agg.prev, curr])
         // we're processing a list of lists, one access offset
         next = Just(curr)
         update = (stack) => ({ prev: next, stack })
@@ -43,16 +46,27 @@ main = (rawArgs) => {
                 )
               } else do {
                 currentIsSingle = List.length(curr) == 1
-                IO.pTrace("...", prev)
                 return where(List.nth(0, prev)) {
+                  Nothing =>
+                    agg
+
                   Just(firstPrev) =>
                     do {
+                      prevIsFlag = isFlag(firstPrev)
                       fixed = String.drop(1, firstPrev)
-                      return if (String.startsWith("$", firstPrev)) {
+                      return if (
+                        String.startsWith("$", firstPrev)
+                          || String.startsWith("-", firstPrev)
+                          && currentIsSingle
+                      ) {
                         if (currentIsSingle) {
                           where(List.nth(0, curr)) {
                             Just(firstCurr) =>
-                              update(List.append(FlagString(fixed, firstCurr), agg.stack))
+                              do {
+                                return !isFlag(firstCurr)
+                                  ? update(List.append(FlagString(fixed, firstCurr), agg.stack))
+                                  : agg
+                              }
 
                             _ =>
                               agg
@@ -60,18 +74,27 @@ main = (rawArgs) => {
                         } else {
                           agg
                         }
-                      } else {
-                        update(
-                          List.append(
-                            (String.startsWith("!", firstPrev) ? FlagNoBool : FlagBool)(fixed),
-                            agg.stack,
-                          ),
-                        )
+                      } else do {
+                        return where(List.nth(0, curr)) {
+                          Just(firstCurr) =>
+                            if (!isFlag(firstPrev)) do {
+                              return update(agg.stack)
+                            } else {
+                              update(
+                                List.append(
+                                  (String.startsWith("!", firstPrev) ? FlagNoBool : FlagBool)(
+                                    fixed,
+                                  ),
+                                  agg.stack,
+                                ),
+                              )
+                            }
+
+                          _ =>
+                            agg
+                        }
                       }
                     }
-
-                  _ =>
-                    agg
                 }
               }
             }
