@@ -6,6 +6,7 @@ import type { CommandWish } from "@/External"
 import { apL } from "Applicative"
 import File from "File"
 import { always, identity } from "Function"
+import IO from "IO"
 import { concat } from "List"
 import { good, mapRej } from "Wish"
 
@@ -15,7 +16,7 @@ import { log } from "@/Log"
 
 
 
-signal = (_bad, _good) => pipe(
+export signal = (_bad, _good) => pipe(
   mapRej(
     pipe(
       always(_bad),
@@ -123,13 +124,18 @@ export _createMadlibProject = pipe(
   .name,
   of,
   concat(["new"]),
+  IO.pTrace("huh!?"),
   Ext.madlib,
 )
 
-createMadlibProject :: RageDef -> RageState
+// createMadlibProject :: RageDef -> RageState
 export createMadlibProject = pipe(
   _createMadlibProject,
-  signal(ScaffoldFail, Scaffold),
+  // signal(ScaffoldFail, Scaffold),
+
+
+
+
 )
 
 _pullGitignore :: RageDef -> CommandWish
@@ -192,19 +198,25 @@ runGitCommands = (def, s) => pipe(
 )(s)
 
 
-create :: RageDef -> RageState
+// create :: RageDef -> RageState
 export create = (def) => pipe(
   // create a new madlib project (madlib new <project>)
   createMadlibProject,
   // change directory? (cd <project>)
   // update the madlib.json file (raw fs.write)
-  apL(overwriteMadlibJson(def)),
+  // apL(overwriteMadlibJson(def)),
   // update the README.md (raw fs.write)
-  apL(overwriteReadme(def)),
+  // apL(overwriteReadme(def)),
   // set the remote origin (git remote add origin <repo>)
   // pull down the .gitignore file (curl path > .gitignore)
-  def.handleGit ? runGitCommands(def) : identity,
+  // def.handleGit ? runGitCommands(def) : identity,
   // push it real good (git push --set-upstream origin main)
+
+
+
+
+
+
 
 
 )(def)

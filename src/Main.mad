@@ -1,17 +1,13 @@
-// import type { Flag } from "@/Args"
-
-import { flip, noop } from "Function"
+import { noop } from "Function"
 import IO from "IO"
 import List from "List"
-import { Just, Nothing } from "Maybe"
-import String from "String"
 import Wish from "Wish"
 
 import { parseFlags } from "Ensign"
 
 import { postParse } from "@/Args"
-import Ext from "@/External"
 import { log } from "@/Log"
+import Rage from "@/Rage"
 
 
 
@@ -23,5 +19,18 @@ main = (rawArgs) => {
     log.detailParsed("flags parsed!"),
     postParse,
     log.detailParsed("consolidated flags!"),
+    // Rage.create,
+    Rage._createMadlibProject,
+    log.detail("😡😡😡"),
+    Wish.fulfill(
+      pipe(
+        IO.pTrace("BAD!"),
+        noop,
+      ),
+      pipe(
+        IO.pTrace("GOOD!"),
+        noop,
+      ),
+    ),
   )(rawArgs)
 }
