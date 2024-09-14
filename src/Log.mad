@@ -1,0 +1,23 @@
+import Party from "PartyBus"
+
+
+
+export TAGS = {
+  external: Party.tag("external"),
+  info: Party.tag("info"),
+  detail: Party.tag("detail"),
+  detailArgs: Party.tagWithScope("detail", ["args"]),
+  detailParsed: Party.tagWithScope("detail", ["args", "parsed"]),
+  status: Party.tag("status"),
+  error: Party.tag("error"),
+}
+
+export log = {
+  external: Party.env(TAGS.external),
+  info: Party.env(TAGS.info),
+  detail: Party.env(TAGS.detail),
+  detailArgs: Party.env(TAGS.detailArgs),
+  detailParsed: Party.env(TAGS.detailParsed),
+  error: Party.env(TAGS.error),
+  status: Party.env(TAGS.status),
+}

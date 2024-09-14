@@ -11,24 +11,35 @@ import { good, mapRej } from "Wish"
 
 import Ext from "@/External"
 import { setRemote } from "@/Git"
+import { log } from "@/Log"
 
 
 
 signal = (_bad, _good) => pipe(
-  mapRej(always(_bad)),
-  map(always(_good)),
+  mapRej(
+    pipe(
+      always(_bad),
+      log.error("ERROR"),
+    ),
+  ),
+  map(
+    pipe(
+      always(_good),
+      log.status("PROGRESS"),
+    ),
+  ),
 )
 
 export type Project = Library | Tool | Other
 
 /*
-name :: String - the name of the project 
 description :: String - a description of the project
+ignore :: String - a path to pull a .gitignore value from 
+kind :: Project - what kind of project is this? 
+name :: String - the name of the project 
 repo :: String - the owner/repo path 
 template :: String - the project repo to pull from 
-ignore :: String - a path to pull a .gitignore value from 
 useImportAliases :: Boolean - do we wanna use import aliases? 
-kind :: Project - what kind of project is this? 
 */
 export alias ProjectDef = {
   description :: String,
@@ -108,15 +119,12 @@ export handleProjectStatus = where {
 export alias RageState = Wish ProjectError ProjectStatus
 
 _createMadlibProject :: RageDef -> CommandWish
-export _createMadlibProject = (def) => {
-  cmd = def.log ? Ext.log_madlib : Ext.madlib
-  return pipe(
-    .name,
-    of,
-    concat(["new"]),
-    cmd,
-  )(def)
-}
+export _createMadlibProject = pipe(
+  .name,
+  of,
+  concat(["new"]),
+  Ext.madlib,
+)
 
 createMadlibProject :: RageDef -> RageState
 export createMadlibProject = pipe(
@@ -125,9 +133,9 @@ export createMadlibProject = pipe(
 )
 
 _pullGitignore :: RageDef -> CommandWish
-export _pullGitignore = (def) => {
-  cmd = (def.log ? Ext.curl : Ext.log_curl)
-  return cmd([def.ignore, "-o", `${def.name}/.gitignore`])
+export _pullGitignore = where {
+  { name, ignore } =>
+    Ext.curl([ignore, "-o", `${name}/.gitignore`])
 }
 
 pullGitignore :: RageDef -> RageState
@@ -137,17 +145,20 @@ export pullGitignore = pipe(
 )
 
 _overwriteMadlibJson :: RageDef -> Wish Error {}
-export _overwriteMadlibJson = (def) => File.write(
-  `${def.name}/madlib.json`,
-  `{
-  "name": "${def.name}",
+export _overwriteMadlibJson = where {
+  { name } =>
+    File.write(
+      `${name}/madlib.json`,
+      `{
+  "name": "${name}",
   "version": "0.0.1",
   "main": "src/Main.mad",
   "importAliases": {
     ".": "src"
   }
 }`,
-)
+    )
+}
 
 overwriteMadlibJson :: RageDef -> RageState
 export overwriteMadlibJson = pipe(
@@ -156,10 +167,10 @@ export overwriteMadlibJson = pipe(
 )
 
 _overwriteReadme :: RageDef -> Wish Error {}
-export _overwriteReadme = (def) => File.write(
-  `${def.name}/README.md`,
-  `# ${def.name}${def.description}`,
-)
+export _overwriteReadme = where {
+  { name, description } =>
+    File.write(`${name}/README.md`, `# ${name}\n${description}`)
+}
 
 overwriteReadme :: RageDef -> RageState
 export overwriteReadme = pipe(
@@ -180,20 +191,20 @@ runGitCommands = (def, s) => pipe(
   apL(setGitRemote(def)),
 )(s)
 
+
 create :: RageDef -> RageState
-export create = (def) => {
-  return pipe(
-    createMadlibProject,
-    apL(overwriteMadlibJson(def)),
-    apL(overwriteReadme(def)),
-    def.handleGit ? runGitCommands(def) : identity,
-  )(def)
-  // 1. create a new madlib project (madlib new <project>)
-  // 2. change directory? (cd <project>)
-  // 3. pull down the .gitignore file (curl path > .gitignore)
-  // 4. update the madlib.json file (raw fs.write)
-  // 5. update the README.md (raw fs.write)
-  // 6. set the remote origin (git remote add origin <repo>)
-  // 7. push it real good (git push --set-upstream origin main)
-  // return good("")
-}
+export create = (def) => pipe(
+  // create a new madlib project (madlib new <project>)
+  createMadlibProject,
+  // change directory? (cd <project>)
+  // update the madlib.json file (raw fs.write)
+  apL(overwriteMadlibJson(def)),
+  // update the README.md (raw fs.write)
+  apL(overwriteReadme(def)),
+  // set the remote origin (git remote add origin <repo>)
+  // pull down the .gitignore file (curl path > .gitignore)
+  def.handleGit ? runGitCommands(def) : identity,
+  // push it real good (git push --set-upstream origin main)
+
+
+)(def)

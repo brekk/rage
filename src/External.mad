@@ -9,15 +9,16 @@ import { join } from "String"
 
 export alias CommandWish = Wish CommandResult CommandResult
 
-
-
-run = exec($, $, DEFAULT_COMMAND_OPTIONS)
-
-perform :: String -> List String -> CommandWish
-export perform = (cmd, args) => {
-  IO.putLine(`▸ ${IO.green(cmd)} ${IO.yellow(join(" ", args))}`)
-  return run(cmd, args)
+operate :: Boolean -> String -> List String -> CommandWish
+export operate = (log, cmd, args) => {
+  if (log) {
+    IO.putLine(`▸ ${IO.green(cmd)} ${IO.yellow(join(" ", args))}`)
+  }
+  return exec(cmd, args, DEFAULT_COMMAND_OPTIONS)
 }
+
+export run = operate(false)
+export perform = operate(true)
 
 export curl = run("curl")
 export log_curl = perform("curl")

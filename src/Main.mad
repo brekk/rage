@@ -11,16 +11,17 @@ import { parseFlags } from "Ensign"
 
 import { postParse } from "@/Args"
 import Ext from "@/External"
+import { log } from "@/Log"
 
 
 
 main = (rawArgs) => {
   pipe(
     List.drop(1),
-    IO.pTrace("RAW ARGS"),
+    log.detailArgs("raw args"),
     parseFlags,
-    IO.pTrace("args!"),
+    log.detailParsed("flags parsed!"),
     postParse,
-    IO.pTrace("posted parsies!"),
+    log.detailParsed("consolidated flags!"),
   )(rawArgs)
 }
