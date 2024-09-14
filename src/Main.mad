@@ -19,15 +19,15 @@ main = (rawArgs) => {
     log.detailParsed("flags parsed!"),
     postParse,
     log.detailParsed("consolidated flags!"),
-    // Rage.create,
-    Rage._createMadlibProject,
-    log.detail("😡😡😡"),
+    Rage.create,
     Wish.fulfill(
       pipe(
+        Rage.handleProjectError,
         IO.pTrace("BAD!"),
         noop,
       ),
       pipe(
+        Rage.handleProjectStatus,
         IO.pTrace("GOOD!"),
         noop,
       ),

@@ -19,6 +19,7 @@ import { log } from "@/Log"
 export signal = (_bad, _good) => pipe(
   mapRej(
     pipe(
+      log.detail("signal, pre-fail"),
       always(_bad),
       log.error("ERROR"),
     ),
@@ -55,7 +56,7 @@ export alias RageDef = { ...ProjectDef, handleGit :: Boolean, log :: Boolean }
 
 export type ProjectError
   = ScaffoldFail
-  | JsonNotUpdated
+  | JsonNotCreated
   | ReadmeNotUpdated
   | InvalidRepo
   | InvalidTemplate
@@ -66,8 +67,8 @@ export handleProjectError = where {
   ScaffoldFail =>
     "Unable to create project scaffold"
 
-  JsonNotUpdated =>
-    "Unable to update madlib.json"
+  JsonNotCreated =>
+    "Unable to create madlib.json"
 
   ReadmeNotUpdated =>
     "Unable to alter README.md"
@@ -88,7 +89,7 @@ export handleProjectError = where {
 export type ProjectStatus
   = Scaffold
   | GitIgnored
-  | JsonUpdated
+  | JsonCreated
   | ReadmeUpdated
   | RepoCreated
   | RemoteSet
@@ -96,13 +97,13 @@ export type ProjectStatus
 
 export handleProjectStatus = where {
   Scaffold =>
-    "Created project via `madlib new`"
+    "Created project folder"
 
   GitIgnored =>
     "Pulled a .gitignore file via curl"
 
-  JsonUpdated =>
-    "Updated the madlib.json file"
+  JsonCreated =>
+    "Created the madlib.json file"
 
   ReadmeUpdated =>
     "Updated the project README.md"
@@ -119,24 +120,41 @@ export handleProjectStatus = where {
 
 export alias RageState = Wish ProjectError ProjectStatus
 
-_createMadlibProject :: RageDef -> CommandWish
-export _createMadlibProject = pipe(
-  .name,
-  of,
-  concat(["new"]),
-  IO.pTrace("huh!?"),
-  Ext.madlib,
-)
+_makeProjectDirectory :: RageDef -> CommandWish
+export _makeProjectDirectory = where {
+  { name } =>
+    Ext.mkdir([name])
+}
 
-// createMadlibProject :: RageDef -> RageState
-export createMadlibProject = pipe(
-  _createMadlibProject,
-  // signal(ScaffoldFail, Scaffold),
+// _createMadlibJson :: RageDef -> Wish Error {}
+export _createMadlibJson = where {
+  { name } =>
+    pipe(
+      Ext.mkdir,
+      mapRej(always(ScaffoldFail)),
+      chain(
+        (_) => pipe(
+          File.write(`${name}/madlib.json`),
+          mapRej(always(JsonNotCreated)),
+        )(
+          `{
+  "name": "${name}",
+  "version": "0.0.1",
+  "main": "src/Main.mad",
+  "importAliases": {
+    ".": "src"
+  }
+}`,
+        ),
+      ),
+    )([name])
+}
 
-
-
-
-)
+createMadlibProject :: RageDef -> RageState
+export createMadlibProject = (def) => pipe(
+  _createMadlibJson,
+  signal(JsonNotCreated, JsonCreated),
+)(def)
 
 _pullGitignore :: RageDef -> CommandWish
 export _pullGitignore = where {
@@ -148,28 +166,6 @@ pullGitignore :: RageDef -> RageState
 export pullGitignore = pipe(
   _pullGitignore,
   signal(InvalidIgnore, GitIgnored),
-)
-
-_overwriteMadlibJson :: RageDef -> Wish Error {}
-export _overwriteMadlibJson = where {
-  { name } =>
-    File.write(
-      `${name}/madlib.json`,
-      `{
-  "name": "${name}",
-  "version": "0.0.1",
-  "main": "src/Main.mad",
-  "importAliases": {
-    ".": "src"
-  }
-}`,
-    )
-}
-
-overwriteMadlibJson :: RageDef -> RageState
-export overwriteMadlibJson = pipe(
-  _overwriteMadlibJson,
-  signal(JsonNotUpdated, JsonUpdated),
 )
 
 _overwriteReadme :: RageDef -> Wish Error {}
@@ -204,13 +200,33 @@ export create = (def) => pipe(
   createMadlibProject,
   // change directory? (cd <project>)
   // update the madlib.json file (raw fs.write)
-  // apL(overwriteMadlibJson(def)),
   // update the README.md (raw fs.write)
   // apL(overwriteReadme(def)),
   // set the remote origin (git remote add origin <repo>)
   // pull down the .gitignore file (curl path > .gitignore)
   // def.handleGit ? runGitCommands(def) : identity,
   // push it real good (git push --set-upstream origin main)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
