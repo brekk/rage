@@ -126,14 +126,19 @@ export _makeProjectDirectory = where {
     Ext.mkdir([name])
 }
 
-// _createMadlibJson :: RageDef -> Wish Error {}
+_createMadlibJson :: RageDef -> Wish ProjectError {}
 export _createMadlibJson = where {
   { name } =>
     pipe(
       Ext.mkdir,
-      mapRej(always(ScaffoldFail)),
-      chain(
-        (_) => pipe(
+      mapRej(
+        pipe(
+          IO.pTrace("BARF DIR?"),
+          always(ScaffoldFail),
+        ),
+      ),
+      apL(
+        pipe(
           File.write(`${name}/madlib.json`),
           mapRej(always(JsonNotCreated)),
         )(
@@ -147,14 +152,14 @@ export _createMadlibJson = where {
 }`,
         ),
       ),
-    )([name])
+    )
 }
 
 createMadlibProject :: RageDef -> RageState
-export createMadlibProject = (def) => pipe(
+export createMadlibProject = pipe(
   _createMadlibJson,
   signal(JsonNotCreated, JsonCreated),
-)(def)
+)
 
 _pullGitignore :: RageDef -> CommandWish
 export _pullGitignore = where {
@@ -190,7 +195,14 @@ setGitRemote = pipe(
 runGitCommands :: RageDef -> RageState -> RageState
 runGitCommands = (def, s) => pipe(
   apL(pullGitignore(def)),
-  apL(setGitRemote(def)),
+
+  // apL(setGitRemote(def)),
+
+
+
+
+
+
 )(s)
 
 
@@ -198,41 +210,6 @@ runGitCommands = (def, s) => pipe(
 export create = (def) => pipe(
   // create a new madlib project (madlib new <project>)
   createMadlibProject,
-  // change directory? (cd <project>)
-  // update the madlib.json file (raw fs.write)
-  // update the README.md (raw fs.write)
-  // apL(overwriteReadme(def)),
-  // set the remote origin (git remote add origin <repo>)
   // pull down the .gitignore file (curl path > .gitignore)
-  // def.handleGit ? runGitCommands(def) : identity,
-  // push it real good (git push --set-upstream origin main)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  def.handleGit ? runGitCommands(def) : identity,
 )(def)
