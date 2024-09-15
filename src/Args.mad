@@ -41,7 +41,7 @@ export postParse = List.reduce(
   },
   {
     description: "",
-    ignore: "",
+    ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
     kind: Other,
     name: "",
     repo: "",

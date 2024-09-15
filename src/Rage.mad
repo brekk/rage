@@ -11,7 +11,7 @@ import { concat } from "List"
 import { bad, good, mapRej } from "Wish"
 
 import Ext from "@/External"
-import { setRemote } from "@/Git"
+import Git from "@/Git"
 import { log } from "@/Log"
 
 
@@ -58,6 +58,7 @@ export type ProjectError
   = ScaffoldFail
   | JsonNotCreated
   | ReadmeNotUpdated
+  | RepoNotInitialized
   | InvalidRepo
   | InvalidTemplate
   | InvalidIgnore
@@ -72,6 +73,9 @@ export handleProjectError = where {
 
   ReadmeNotUpdated =>
     "Unable to alter README.md"
+
+  RepoNotInitialized =>
+    "Unable to initialize git repository"
 
   InvalidRepo =>
     "Given repo is not valid"
@@ -91,6 +95,7 @@ export type ProjectStatus
   | GitIgnored
   | JsonCreated
   | ReadmeUpdated
+  | RepoInitialized
   | RepoCreated
   | RemoteSet
   | Ready
@@ -107,6 +112,9 @@ export handleProjectStatus = where {
 
   ReadmeUpdated =>
     "Updated the project README.md"
+
+  RepoInitialized =>
+    "Git repo initialized"
 
   RepoCreated =>
     "Created github repo programmatically"
@@ -156,7 +164,6 @@ _createMadlibJson = where {
 createMadlibProject :: RageDef -> RageState
 export createMadlibProject = pipe(
   _createMadlibJson,
-  signal(JsonNotCreated, JsonCreated),
 )
 
 _pullGitignore :: RageDef -> CommandWish
@@ -186,13 +193,23 @@ export overwriteReadme = pipe(
 setGitRemote :: RageDef -> RageState
 setGitRemote = pipe(
   .repo,
-  setRemote,
+  Git.setRemote,
   signal(InvalidRepo, RemoteSet),
 )
 
+// gitInit :: RageDef -> RageState
+// gitInit = pipe(
+//   Git.init,
+//   signal(RepoNotInitialized, RepoInitialized),
+// )
+
+
 runGitCommands :: RageDef -> RageState -> RageState
 runGitCommands = (def, s) => pipe(
+  // gitInit,
   apL(pullGitignore(def)),
+  // apL(setGitRemote(def)),
+
 )(s)
 
 
