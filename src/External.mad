@@ -5,43 +5,28 @@ import IO from "IO"
 import { DEFAULT_COMMAND_OPTIONS, exec } from "Process"
 import { join } from "String"
 
+import { log } from "@/Log"
+
 
 
 export alias CommandWish = Wish CommandResult CommandResult
 
-operate :: Boolean -> String -> List String -> CommandWish
-export operate = (log, cmd, args) => {
-  if (log) {
-    IO.putLine(`▸ ${IO.green(cmd)} ${IO.yellow(join(" ", args))}`)
-  }
-  return exec(cmd, args, DEFAULT_COMMAND_OPTIONS)
+run :: String -> List String -> CommandWish
+export run = (cmd, args) => {
+  summary = `${IO.green(cmd)} ${IO.yellow(join(" ", args))}`
+  return pipe(
+    log.external(summary),
+    exec($, args, DEFAULT_COMMAND_OPTIONS),
+  )(cmd)
 }
 
-export run = operate(false)
-export perform = operate(true)
-
 export curl = run("curl")
-export log_curl = perform("curl")
-
 export git = run("git")
-export log_git = perform("git")
-
 export rm = run("rm")
-export log_rm = perform("rm")
-
 export rimraf = pipe(
   of,
   mappend(["-rf"]),
   rm,
 )
-export log_rimraf = pipe(
-  of,
-  mappend(["-rf"]),
-  log_rm,
-)
-
 export mkdir = run("mkdir")
-export log_mkdir = perform("mkdir")
-
 export madlib = run("madlib")
-export log_madlib = perform("madlib")

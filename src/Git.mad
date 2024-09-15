@@ -10,10 +10,9 @@ export clone = pipe(
   git,
 )
 
-export init = git(["init"])
+export init = (folder) => git(["-C", folder, "init"])
 
-export setRemote = (repo) => git(["remote", "add", "origin", repo])
+export setRemote = (folder, repo) => git(["-C", folder, "remote", "add", "origin", repo])
 
-export pushUpstream = (origin, branch) => git(["push", "--set-upstream", origin, branch])
-
-export gpsup = pushUpstream("origin", "main")
+// export pushUpstream = (origin, branch) => git(["push", "--set-upstream", origin, branch])
+// export gpsup = pushUpstream("origin", "main")

@@ -62,6 +62,8 @@ export type ProjectError
   | InvalidRepo
   | InvalidTemplate
   | InvalidIgnore
+  | SourceFail
+  | MainFail
   | GenericError
 
 export handleProjectError = where {
@@ -86,6 +88,12 @@ export handleProjectError = where {
   InvalidIgnore =>
     "Unable to copy the .gitignore file via curl"
 
+  SourceFail =>
+    "Unable to create /src folder"
+
+  MainFail =>
+    "Unable to create src/Main.mad file"
+
   GenericError =>
     "The machine is sick"
 }
@@ -98,6 +106,8 @@ export type ProjectStatus
   | RepoInitialized
   | RepoCreated
   | RemoteSet
+  | SourceCreated
+  | MainCreated
   | Ready
 
 export handleProjectStatus = where {
@@ -120,7 +130,13 @@ export handleProjectStatus = where {
     "Created github repo programmatically"
 
   RemoteSet =>
-    "Pushed project to git remote"
+    "Set git remote"
+
+  SourceCreated =>
+    "Created /src folder"
+
+  MainCreated =>
+    "Created src/Main.mad file"
 
   Ready =>
     "Got mad, quickly"
@@ -143,7 +159,8 @@ rawJson = (name) => `{
   }
 }`
 
-_createMadlibJson = where {
+createMadlibProject :: RageDef -> RageState
+export createMadlibProject = where {
   { name } =>
     do {
       dir <- pipe(
@@ -161,11 +178,6 @@ _createMadlibJson = where {
     }
 }
 
-createMadlibProject :: RageDef -> RageState
-export createMadlibProject = pipe(
-  _createMadlibJson,
-)
-
 _pullGitignore :: RageDef -> CommandWish
 export _pullGitignore = where {
   { name, ignore } =>
@@ -178,45 +190,86 @@ export pullGitignore = pipe(
   signal(InvalidIgnore, GitIgnored),
 )
 
-_overwriteReadme :: RageDef -> Wish Error {}
-export _overwriteReadme = where {
+_writeReadme :: RageDef -> RageState
+export _writeReadme = where {
   { name, description } =>
-    File.write(`${name}/README.md`, `# ${name}\n${description}`)
+    pipe(
+      File.write(`${name}/README.md`),
+      signal(ReadmeNotUpdated, ReadmeUpdated),
+    )(`# ${name}\n\n${description}`)
 }
 
-overwriteReadme :: RageDef -> RageState
-export overwriteReadme = pipe(
-  _overwriteReadme,
-  signal(ReadmeNotUpdated, ReadmeUpdated),
-)
+writeReadme :: RageDef -> RageState -> RageState
+export writeReadme = (def, s) => pipe(
+  _writeReadme,
+  apL($, s),
+)(def)
 
-setGitRemote :: RageDef -> RageState
-setGitRemote = pipe(
-  .repo,
-  Git.setRemote,
+setGitRemote :: String -> String -> RageState
+setGitRemote = (folder, repo) => pipe(
+  Git.setRemote(folder),
   signal(InvalidRepo, RemoteSet),
-)
+)(repo)
 
-// gitInit :: RageDef -> RageState
-// gitInit = pipe(
-//   Git.init,
-//   signal(RepoNotInitialized, RepoInitialized),
-// )
+gitInit :: String -> RageState
+gitInit = pipe(
+  Git.init,
+  signal(RepoNotInitialized, RepoInitialized),
+)
 
 
 runGitCommands :: RageDef -> RageState -> RageState
 runGitCommands = (def, s) => pipe(
-  // gitInit,
-  apL(pullGitignore(def)),
-  // apL(setGitRemote(def)),
+  where {
+    { name, repo } =>
+      do {
+        i <- gitInit(name)
+        g <- pullGitignore(def)
+        r <- setGitRemote(name, repo)
+        return of(r)
+      }
+  },
+  apL($, s),
+)(def)
 
-)(s)
+rawMain = (name) => `import IO from "IO"
+
+main = () => {
+  pipe(
+    IO.pTrace("Main file for:"),
+  )("${name}")
+}`
+
+makeSourceAndMain :: RageDef -> RageState -> RageState
+makeSourceAndMain = (def, s) => pipe(
+  where {
+    { name } =>
+      do {
+        dir <- pipe(
+          mappend($, "/src"),
+          of,
+          Ext.mkdir,
+          signal(SourceFail, SourceCreated),
+        )(name)
+        file <- pipe(
+          rawMain,
+          File.write(`${name}/src/Main.mad`),
+          signal(MainFail, MainCreated),
+        )(name)
+        return pipe(
+          of,
+        )(file)
+      }
+  },
+  apL($, s),
+)(def)
 
 
-// create :: RageDef -> RageState
+
+create :: RageDef -> RageState
 export create = (def) => pipe(
-  // create a new madlib project (madlib new <project>)
   createMadlibProject,
-  // pull down the .gitignore file (curl path > .gitignore)
+  writeReadme(def),
+  makeSourceAndMain(def),
   def.handleGit ? runGitCommands(def) : identity,
 )(def)
