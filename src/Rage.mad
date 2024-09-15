@@ -8,7 +8,7 @@ import File from "File"
 import { always, identity } from "Function"
 import IO from "IO"
 import { concat } from "List"
-import { good, mapRej } from "Wish"
+import { bad, good, mapRej } from "Wish"
 
 import Ext from "@/External"
 import { setRemote } from "@/Git"
@@ -126,33 +126,31 @@ export _makeProjectDirectory = where {
     Ext.mkdir([name])
 }
 
-_createMadlibJson :: RageDef -> Wish ProjectError {}
-export _createMadlibJson = where {
-  { name } =>
-    pipe(
-      Ext.mkdir,
-      mapRej(
-        pipe(
-          IO.pTrace("BARF DIR?"),
-          always(ScaffoldFail),
-        ),
-      ),
-      apL(
-        pipe(
-          File.write(`${name}/madlib.json`),
-          mapRej(always(JsonNotCreated)),
-        )(
-          `{
+rawJson = (name) => `{
   "name": "${name}",
   "version": "0.0.1",
   "main": "src/Main.mad",
   "importAliases": {
     ".": "src"
   }
-}`,
-        ),
-      ),
-    )
+}`
+
+_createMadlibJson = where {
+  { name } =>
+    do {
+      dir <- pipe(
+        Ext.mkdir,
+        signal(ScaffoldFail, Scaffold),
+      )([name])
+      file <- pipe(
+        rawJson,
+        File.write(`${name}/madlib.json`),
+        signal(JsonNotCreated, JsonCreated),
+      )(name)
+      return pipe(
+        of,
+      )(file)
+    }
 }
 
 createMadlibProject :: RageDef -> RageState
@@ -195,14 +193,6 @@ setGitRemote = pipe(
 runGitCommands :: RageDef -> RageState -> RageState
 runGitCommands = (def, s) => pipe(
   apL(pullGitignore(def)),
-
-  // apL(setGitRemote(def)),
-
-
-
-
-
-
 )(s)
 
 
