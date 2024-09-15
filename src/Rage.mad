@@ -264,12 +264,11 @@ makeSourceAndMain = (def, s) => pipe(
   apL($, s),
 )(def)
 
-
-
 create :: RageDef -> RageState
 export create = (def) => pipe(
   createMadlibProject,
   writeReadme(def),
   makeSourceAndMain(def),
   def.handleGit ? runGitCommands(def) : identity,
+  map(always(Ready)),
 )(def)
