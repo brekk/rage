@@ -3,13 +3,13 @@ import Party from "PartyBus"
 
 
 export TAGS = {
-  external: Party.tag("external"),
-  info: Party.tag("info"),
-  detail: Party.tag("detail"),
-  detailArgs: Party.tagWithScope("detail", ["args"]),
-  detailParsed: Party.tagWithScope("detail", ["args", "parsed"]),
-  status: Party.tag("status"),
-  error: Party.tag("error"),
+  external: Party.tagWithScope("rage", ["external"]),
+  info: Party.tagWithScope("rage", ["info"]),
+  detail: Party.tagWithScope("rage", ["detail"]),
+  detailArgs: Party.tagWithScope("rage", ["detail", "args"]),
+  detailParsed: Party.tagWithScope("rage", ["detail", "args", "parsed"]),
+  status: Party.tagWithScope("rage", ["status"]),
+  error: Party.tagWithScope("rage", ["error"]),
 }
 
 export log = {

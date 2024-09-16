@@ -1,53 +1,92 @@
-import type { Flag } from "Ensign"
+import type { Flag, MatchedDictionary } from "Ensign"
 
+import type { Project } from "@/Library"
+
+import Dict from "Dictionary"
+import { fromRight } from "Either"
 import List from "List"
+import { Just, Nothing } from "Maybe"
+import { toLower } from "String"
 
-import { Flag, FlagOff, FlagOn } from "Ensign"
+import { flagBoolean, flagString, getFlag, getToggle } from "Ensign"
 
-import { Other } from "@/Rage"
+import { Library, Other, Tool } from "@/Library"
 
 
 
-export postParse = List.reduce(
-  (agg, flag) => where(flag) {
-    FlagOff(key) =>
-      if (key == "aliases") {
-        { ...agg, useImportAliases: false }
-      } else if (key == "git") {
-        { ...agg, handleGit: false }
-      } else if (key == "log") {
-        { ...agg, log: false }
+export FLAGS = [
+  flagString("name", ["n"], "The name of the project"),
+  flagString("description", ["d", "desc"], "Describe the project"),
+  flagString("ignore", ["i"], "A path to a .gitignore source"),
+  flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
+  flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
+  flagString("repo", ["r"], "Repository to set as origin"),
+]
+
+alias StringKeys = {
+  description :: String,
+  ignore :: String,
+  kind :: Project,
+  name :: String,
+  repo :: String,
+  template :: String,
+}
+
+DEFAULT_STRING_KEYS = {
+  description: "",
+  ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
+  name: "",
+  repo: "",
+  template: "",
+  kind: Library,
+}
+
+mash :: MatchedDictionary -> StringKeys -> String -> StringKeys
+mash = (parsed, agg, k) => pipe(
+  getFlag($, parsed),
+  where {
+    Just(x) =>
+      if (k == "description") {
+        { ...agg, description: x }
+      } else if (k == "ignore") {
+        { ...agg, ignore: x }
+      } else if (k == "name") {
+        { ...agg, name: x }
+      } else if (k == "repo") {
+        { ...agg, repo: x }
+      } else if (k == "template") {
+        // if (k == "template") {
+        { ...agg, template: x }
       } else {
-        agg
-      }
-
-    Flag(key, value) =>
-      if (key == "desc" || key == "d") {
-        { ...agg, description: value }
-      } else if (key == "ignore" || key == "i") {
-        { ...agg, ignore: value }
-      } else if (key == "name" || key == "n") {
-        { ...agg, name: value }
-      } else if (key == "repo" || key == "r") {
-        { ...agg, repo: value }
-      } else if (key == "template" || key == "t") {
-        { ...agg, template: value }
-      } else {
-        agg
+        { ...agg, kind: toLower(x) == "other" ? Other : toLower(x) == "library" ? Library : Tool }
       }
 
     _ =>
       agg
   },
-  {
-    description: "",
-    ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
-    kind: Other,
-    name: "",
-    repo: "",
-    template: "",
-    useImportAliases: true,
-    handleGit: true,
-    log: true,
-  },
+)(k)
+
+export postParse = pipe(
+  fromRight({ on: Dict.empty, keyed: Dict.empty }),
+  (parsed) => pipe(
+    List.reduce(mash(parsed), DEFAULT_STRING_KEYS),
+    (flagged) => List.reduce(
+      (agg, k) => pipe(
+        getToggle($, parsed),
+        where {
+          Just(x) =>
+            if (k == "aliases") {
+              ({ ...agg, useAliases: x })
+            } else {
+              ({ ...agg, useGit: x })
+            }
+
+          Nothing =>
+            agg
+        },
+      )(k),
+      { ...flagged, useAliases: true, useGit: true },
+      ["aliases", "git"],
+    ),
+  )(["description", "ignore", "name", "repo", "template"]),
 )

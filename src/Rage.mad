@@ -1,274 +1,37 @@
-import type { Error } from "File"
-import type { Wish } from "Wish"
-
-import type { CommandWish } from "@/External"
-
-import { apL } from "Applicative"
-import File from "File"
-import { always, identity } from "Function"
+import { noop } from "Function"
 import IO from "IO"
-import { concat } from "List"
-import { bad, good, mapRej } from "Wish"
+import List from "List"
+import Wish from "Wish"
 
-import Ext from "@/External"
-import Git from "@/Git"
+import { createLegend, parseFlags } from "Ensign"
+
+import { FLAGS, postParse } from "@/Args"
+import Rage from "@/Library"
 import { log } from "@/Log"
 
 
 
-export signal = (_bad, _good) => pipe(
-  mapRej(
-    pipe(
-      log.detail("signal, pre-fail"),
-      always(_bad),
-      log.error("ERROR"),
-    ),
-  ),
-  map(
-    pipe(
-      always(_good),
-      log.status("PROGRESS"),
-    ),
-  ),
-)
-
-export type Project = Library | Tool | Other
-
-/*
-description :: String - a description of the project
-ignore :: String - a path to pull a .gitignore value from 
-kind :: Project - what kind of project is this? 
-name :: String - the name of the project 
-repo :: String - the owner/repo path 
-template :: String - the project repo to pull from 
-useImportAliases :: Boolean - do we wanna use import aliases? 
-*/
-export alias ProjectDef = {
-  description :: String,
-  ignore :: String,
-  kind :: Project,
-  name :: String,
-  repo :: String,
-  template :: String,
-  useImportAliases :: Boolean,
-}
-export alias RageDef = { ...ProjectDef, handleGit :: Boolean, log :: Boolean }
-
-export type ProjectError
-  = ScaffoldFail
-  | JsonNotCreated
-  | ReadmeNotUpdated
-  | RepoNotInitialized
-  | InvalidRepo
-  | InvalidTemplate
-  | InvalidIgnore
-  | SourceFail
-  | MainFail
-  | GenericError
-
-export handleProjectError = where {
-  ScaffoldFail =>
-    "Unable to create project scaffold"
-
-  JsonNotCreated =>
-    "Unable to create madlib.json"
-
-  ReadmeNotUpdated =>
-    "Unable to alter README.md"
-
-  RepoNotInitialized =>
-    "Unable to initialize git repository"
-
-  InvalidRepo =>
-    "Given repo is not valid"
-
-  InvalidTemplate =>
-    "Given template repo is not valid"
-
-  InvalidIgnore =>
-    "Unable to copy the .gitignore file via curl"
-
-  SourceFail =>
-    "Unable to create /src folder"
-
-  MainFail =>
-    "Unable to create src/Main.mad file"
-
-  GenericError =>
-    "The machine is sick"
-}
-
-export type ProjectStatus
-  = Scaffold
-  | GitIgnored
-  | JsonCreated
-  | ReadmeUpdated
-  | RepoInitialized
-  | RepoCreated
-  | RemoteSet
-  | SourceCreated
-  | MainCreated
-  | Ready
-
-export handleProjectStatus = where {
-  Scaffold =>
-    "Created project folder"
-
-  GitIgnored =>
-    "Pulled a .gitignore file via curl"
-
-  JsonCreated =>
-    "Created the madlib.json file"
-
-  ReadmeUpdated =>
-    "Updated the project README.md"
-
-  RepoInitialized =>
-    "Git repo initialized"
-
-  RepoCreated =>
-    "Created github repo programmatically"
-
-  RemoteSet =>
-    "Set git remote"
-
-  SourceCreated =>
-    "Created /src folder"
-
-  MainCreated =>
-    "Created src/Main.mad file"
-
-  Ready =>
-    "Got mad, quickly"
-}
-
-export alias RageState = Wish ProjectError ProjectStatus
-
-_makeProjectDirectory :: RageDef -> CommandWish
-export _makeProjectDirectory = where {
-  { name } =>
-    Ext.mkdir([name])
-}
-
-rawJson = (name) => `{
-  "name": "${name}",
-  "version": "0.0.1",
-  "main": "src/Main.mad",
-  "importAliases": {
-    ".": "src"
-  }
-}`
-
-createMadlibProject :: RageDef -> RageState
-export createMadlibProject = where {
-  { name } =>
-    do {
-      dir <- pipe(
-        Ext.mkdir,
-        signal(ScaffoldFail, Scaffold),
-      )([name])
-      file <- pipe(
-        rawJson,
-        File.write(`${name}/madlib.json`),
-        signal(JsonNotCreated, JsonCreated),
-      )(name)
-      return pipe(
-        of,
-      )(file)
-    }
-}
-
-_pullGitignore :: RageDef -> CommandWish
-export _pullGitignore = where {
-  { name, ignore } =>
-    Ext.curl([ignore, "-o", `${name}/.gitignore`])
-}
-
-pullGitignore :: RageDef -> RageState
-export pullGitignore = pipe(
-  _pullGitignore,
-  signal(InvalidIgnore, GitIgnored),
-)
-
-_writeReadme :: RageDef -> RageState
-export _writeReadme = where {
-  { name, description } =>
-    pipe(
-      File.write(`${name}/README.md`),
-      signal(ReadmeNotUpdated, ReadmeUpdated),
-    )(`# ${name}\n\n${description}`)
-}
-
-writeReadme :: RageDef -> RageState -> RageState
-export writeReadme = (def, s) => pipe(
-  _writeReadme,
-  apL($, s),
-)(def)
-
-setGitRemote :: String -> String -> RageState
-setGitRemote = (folder, repo) => pipe(
-  Git.setRemote(folder),
-  signal(InvalidRepo, RemoteSet),
-)(repo)
-
-gitInit :: String -> RageState
-gitInit = pipe(
-  Git.init,
-  signal(RepoNotInitialized, RepoInitialized),
-)
-
-
-runGitCommands :: RageDef -> RageState -> RageState
-runGitCommands = (def, s) => pipe(
-  where {
-    { name, repo } =>
-      do {
-        i <- gitInit(name)
-        g <- pullGitignore(def)
-        r <- setGitRemote(name, repo)
-        return of(r)
-      }
-  },
-  apL($, s),
-)(def)
-
-rawMain = (name) => `import IO from "IO"
-
-main = () => {
+main = (rawArgs) => {
   pipe(
-    IO.pTrace("Main file for:"),
-  )("${name}")
-}`
-
-makeSourceAndMain :: RageDef -> RageState -> RageState
-makeSourceAndMain = (def, s) => pipe(
-  where {
-    { name } =>
-      do {
-        dir <- pipe(
-          mappend($, "/src"),
-          of,
-          Ext.mkdir,
-          signal(SourceFail, SourceCreated),
-        )(name)
-        file <- pipe(
-          rawMain,
-          File.write(`${name}/src/Main.mad`),
-          signal(MainFail, MainCreated),
-        )(name)
-        return pipe(
-          of,
-        )(file)
-      }
-  },
-  apL($, s),
-)(def)
-
-create :: RageDef -> RageState
-export create = (def) => pipe(
-  createMadlibProject,
-  writeReadme(def),
-  makeSourceAndMain(def),
-  def.handleGit ? runGitCommands(def) : identity,
-  map(always(Ready)),
-)(def)
+    List.drop(1),
+    log.detailArgs("raw args"),
+    parseFlags,
+    createLegend(FLAGS),
+    log.detailParsed("flags parsed!"),
+    postParse,
+    log.detailParsed("consolidated flags!"),
+    Rage.create,
+    Wish.fulfill(
+      pipe(
+        Rage.handleProjectError,
+        IO.pTrace("BAD!"),
+        noop,
+      ),
+      pipe(
+        Rage.handleProjectStatus,
+        IO.pTrace("GOOD!"),
+        noop,
+      ),
+    ),
+  )(rawArgs)
+}
