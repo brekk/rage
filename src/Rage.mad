@@ -3,7 +3,7 @@ import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
-import { createLegend, parseFlags } from "Ensign"
+import Ensign from "Ensign"
 
 import { FLAGS, postParse } from "@/Args"
 import Rage from "@/Library"
@@ -15,22 +15,25 @@ main = (rawArgs) => {
   pipe(
     List.drop(1),
     log.detailArgs("raw args"),
-    parseFlags,
-    createLegend(FLAGS),
+    Ensign.parseFlags,
     log.detailParsed("flags parsed!"),
     postParse,
     log.detailParsed("consolidated flags!"),
-    Rage.create,
-    Wish.fulfill(
+    map(
       pipe(
-        Rage.handleProjectError,
-        IO.pTrace("BAD!"),
-        noop,
-      ),
-      pipe(
-        Rage.handleProjectStatus,
-        IO.pTrace("GOOD!"),
-        noop,
+        Rage.create,
+        Wish.fulfill(
+          pipe(
+            Rage.handleProjectError,
+            IO.pTrace("BAD!"),
+            noop,
+          ),
+          pipe(
+            Rage.handleProjectStatus,
+            IO.pTrace("GOOD!"),
+            noop,
+          ),
+        ),
       ),
     ),
   )(rawArgs)

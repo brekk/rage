@@ -8,9 +8,9 @@
   },
   "dependencies": [
     {
-      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.0.4.zip",
+      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.0.6.zip",
       "description": "Ensign",
-      "minVersion": "0.0.4"
+      "minVersion": "0.0.6"
     },
     {
       "url": "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.3.zip",

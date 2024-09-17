@@ -1,92 +1,79 @@
-import type { Flag, MatchedDictionary } from "Ensign"
+import type { DeclaredFlag, Flag } from "Ensign"
 
 import type { Project } from "@/Library"
+import type { RageDef } from "@/Library"
 
 import Dict from "Dictionary"
-import { fromRight } from "Either"
+import { Left, Right } from "Either"
+import { fromRight, mapLeft } from "Either"
 import List from "List"
 import { Just, Nothing } from "Maybe"
-import { toLower } from "String"
+import { join, toLower } from "String"
 
-import { flagBoolean, flagString, getFlag, getToggle } from "Ensign"
+import Ensign from "Ensign"
 
 import { Library, Other, Tool } from "@/Library"
 
 
 
 export FLAGS = [
-  flagString("name", ["n"], "The name of the project"),
-  flagString("description", ["d", "desc"], "Describe the project"),
-  flagString("ignore", ["i"], "A path to a .gitignore source"),
-  flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
-  flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
-  flagString("repo", ["r"], "Repository to set as origin"),
+  Ensign.flagString("name", ["n"], "The name of the project"),
+  Ensign.flagString("description", ["d", "desc"], "Describe the project"),
+  Ensign.flagString("ignore", ["i"], "A path to a .gitignore source"),
+  Ensign.flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
+  Ensign.flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
+  Ensign.flagString("repo", ["r"], "Repository to set as origin"),
+  Ensign.flagString("kind", ["k"], "What kind of project is this? (tool / library / other"),
 ]
 
-alias StringKeys = {
-  description :: String,
-  ignore :: String,
-  kind :: Project,
-  name :: String,
-  repo :: String,
-  template :: String,
-}
-
-DEFAULT_STRING_KEYS = {
+DEFAULT_RAGE_DEF :: RageDef
+DEFAULT_RAGE_DEF = {
   description: "",
   ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
   name: "",
   repo: "",
   template: "",
   kind: Library,
+  useAliases: true,
+  useGit: true,
 }
 
-mash :: MatchedDictionary -> StringKeys -> String -> StringKeys
-mash = (parsed, agg, k) => pipe(
-  getFlag($, parsed),
-  where {
-    Just(x) =>
-      if (k == "description") {
-        { ...agg, description: x }
-      } else if (k == "ignore") {
-        { ...agg, ignore: x }
-      } else if (k == "name") {
-        { ...agg, name: x }
-      } else if (k == "repo") {
-        { ...agg, repo: x }
-      } else if (k == "template") {
-        // if (k == "template") {
-        { ...agg, template: x }
-      } else {
-        { ...agg, kind: toLower(x) == "other" ? Other : toLower(x) == "library" ? Library : Tool }
-      }
-
-    _ =>
-      agg
-  },
-)(k)
 
 export postParse = pipe(
-  fromRight({ on: Dict.empty, keyed: Dict.empty }),
-  (parsed) => pipe(
-    List.reduce(mash(parsed), DEFAULT_STRING_KEYS),
-    (flagged) => List.reduce(
-      (agg, k) => pipe(
-        getToggle($, parsed),
-        where {
-          Just(x) =>
-            if (k == "aliases") {
-              ({ ...agg, useAliases: x })
-            } else {
-              ({ ...agg, useGit: x })
-            }
-
-          Nothing =>
+  Ensign.validate(FLAGS),
+  mapLeft(Ensign.printIssues),
+  map(
+    List.reduce(
+      (agg, flag) => where(flag) {
+        Ensign.Flag(k, v) =>
+          if (k == "description") {
+            { ...agg, description: v }
+          } else if (k == "ignore") {
+            { ...agg, ignore: v }
+          } else if (k == "name") {
+            { ...agg, name: v }
+          } else if (k == "repo") {
+            { ...agg, repo: v }
+          } else if (k == "template") {
+            { ...agg, template: v }
+          } else if (k == "kind") do {
+            v2 = toLower(v)
+            kind = v2 == "library" ? Library : v2 == "tool" ? Tool : Other
+            return { ...agg, kind }
+          } else {
             agg
-        },
-      )(k),
-      { ...flagged, useAliases: true, useGit: true },
-      ["aliases", "git"],
+          }
+
+        Ensign.FlagToggle(k, v) =>
+          if (k == "aliases") {
+            { ...agg, useAliases: v }
+          } else if (k == "git") {
+            { ...agg, useGit: v }
+          } else {
+            agg
+          }
+      },
+      DEFAULT_RAGE_DEF,
     ),
-  )(["description", "ignore", "name", "repo", "template"]),
+  ),
 )
