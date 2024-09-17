@@ -1,7 +1,7 @@
 import type { CommandResult } from "Process"
 import type { Wish } from "Wish"
 
-import { always, equals } from "Function"
+import { equals } from "Function"
 import IO from "IO"
 import { DEFAULT_COMMAND_OPTIONS, exec } from "Process"
 import { join } from "String"
@@ -48,11 +48,11 @@ export walk = (cmd, args) => pipe(
   exists,
   chain(
     (valid) => {
-      failstring = "Command '" ++ cmd ++ "' does not exist"
       return if (valid) {
         run(cmd, args)
-      } else {
-        bad({
+      } else do {
+        failstring = "Command '" ++ cmd ++ "' does not exist"
+        return bad({
           // 18 1 7 5
           // r  a g e
           exitCode: 18175,

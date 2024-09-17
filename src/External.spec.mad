@@ -5,8 +5,29 @@ import { chainRej, good, mapRej } from "Wish"
 
 import { asyncReport, caseN2, report } from "Study"
 
-import { run, which } from "@/External"
+import { exists, run, walk } from "@/External"
 
 
 
-asyncReport(which, "which", [#["skibbledibble", false], #["git", true]])
+asyncReport(exists, "exists", [#["skibbledibble", false], #["git", true]])
+asyncReport(
+  pipe(
+    walk($, ["remote"]),
+    mapRej(always(Error("Can't call remote on command"))),
+  ),
+  "walk - available command",
+  [
+    // technically this can fail / is brittle, but keep for now
+    #["git", { exitCode: 0, stderr: "", stdout: "origin\n" }],
+  ],
+)
+
+asyncReport(
+  pipe(
+    walk($, ["remote"]),
+    map(() => "Happy path, which we won't hit"),
+    chainRej(() => good("Can't call zipzapzop remote")),
+  ),
+  "walk - missing command",
+  [#["zipzapzop", "Can't call zipzapzop remote"]],
+)

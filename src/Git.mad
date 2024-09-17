@@ -1,5 +1,3 @@
-import Wish from "Wish"
-
 import { git } from "@/External"
 
 
@@ -12,7 +10,12 @@ export clone = pipe(
 
 export init = (folder) => git(["-C", folder, "init"])
 
-export setRemote = (folder, repo) => git(["-C", folder, "remote", "add", "origin", repo])
-
-// export pushUpstream = (origin, branch) => git(["push", "--set-upstream", origin, branch])
-// export gpsup = pushUpstream("origin", "main")
+// TODO: I think we can remove this
+export setRemote = (folder, org, name) => git([
+  "-C",
+  folder,
+  "remote",
+  "add",
+  "origin",
+  "https://github.com/" ++ org ++ "/" ++ name,
+])

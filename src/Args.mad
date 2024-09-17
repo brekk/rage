@@ -22,7 +22,8 @@ export FLAGS = [
   Ensign.flagString("ignore", ["i"], "A path to a .gitignore source"),
   Ensign.flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
   Ensign.flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
-  Ensign.flagString("repo", ["r"], "Repository to set as origin"),
+  Ensign.flagString("setRemote", ["r"], "Should we create a repo and set it as remote?"),
+  Ensign.flagString("remote", ["R"], "What should we call this remote? (default: origin)"),
   Ensign.flagString("kind", ["k"], "What kind of project is this? (tool / library / other"),
 ]
 
@@ -31,11 +32,12 @@ DEFAULT_RAGE_DEF = {
   description: "",
   ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
   name: "",
-  repo: "",
   template: "",
   kind: Library,
   useAliases: true,
   useGit: true,
+  setRemote: false,
+  remote: "origin",
 }
 
 
@@ -52,14 +54,14 @@ export postParse = pipe(
             { ...agg, ignore: v }
           } else if (k == "name") {
             { ...agg, name: v }
-          } else if (k == "repo") {
-            { ...agg, repo: v }
           } else if (k == "template") {
             { ...agg, template: v }
           } else if (k == "kind") do {
             v2 = toLower(v)
             kind = v2 == "library" ? Library : v2 == "tool" ? Tool : Other
             return { ...agg, kind }
+          } else if (k == "remote") {
+            { ...agg, remote: v }
           } else {
             agg
           }
@@ -69,6 +71,8 @@ export postParse = pipe(
             { ...agg, useAliases: v }
           } else if (k == "git") {
             { ...agg, useGit: v }
+          } else if (k == "setRemote") {
+            { ...agg, setRemote: v }
           } else {
             agg
           }

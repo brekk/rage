@@ -34,25 +34,17 @@ export signal = (_bad, _good) => pipe(
 
 export type Project = Library | Tool | Other
 
-/*
-description :: String - a description of the project
-ignore :: String - a path to pull a .gitignore value from 
-kind :: Project - what kind of project is this? 
-name :: String - the name of the project 
-repo :: String - the owner/repo path 
-template :: String - the project repo to pull from 
-useImportAliases :: Boolean - do we wanna use import aliases? 
-*/
-export alias ProjectDef = {
+export alias RageDef = {
   description :: String,
   ignore :: String,
   kind :: Project,
   name :: String,
-  repo :: String,
+  remote :: String,
+  setRemote :: Boolean,
   template :: String,
   useAliases :: Boolean,
+  useGit :: Boolean,
 }
-export alias RageDef = { ...ProjectDef, useGit :: Boolean }
 
 export type ProjectError
   = ScaffoldFail
@@ -204,12 +196,13 @@ export writeReadme = (def, s) => pipe(
   _writeReadme,
   apL($, s),
 )(def)
-
+/*
 setGitRemote :: String -> String -> RageState
 setGitRemote = (folder, repo) => pipe(
   Git.setRemote(folder),
   signal(InvalidRepo, RemoteSet),
 )(repo)
+*/
 
 gitInit :: String -> RageState
 gitInit = pipe(
@@ -221,12 +214,12 @@ gitInit = pipe(
 runGitCommands :: RageDef -> RageState -> RageState
 runGitCommands = (def, s) => pipe(
   where {
-    { name, repo } =>
+    { name } =>
       do {
         i <- gitInit(name)
         g <- pullGitignore(def)
-        r <- setGitRemote(name, repo)
-        return of(r)
+        // r <- setGitRemote(name, repo)
+        return of(g)
       }
   },
   apL($, s),

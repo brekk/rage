@@ -1,0 +1,36 @@
+import type { CommandWish } from "@/External"
+
+import Ext from "@/External"
+
+
+
+export hub = Ext.walk("gh")
+
+export type Visibility = Public | Private | Internal
+
+export printVisibility = where {
+  Public =>
+    "--public"
+
+  Private =>
+    "--private"
+
+  Internal =>
+    "--internal"
+}
+
+newRepoWithConfig :: Visibility -> String -> String -> String -> CommandWish
+export newRepoWithConfig = (vis, remote, name, description) => hub([
+  "repo",
+  "create",
+  name,
+  printVisibility(vis),
+  "--description=" ++ description,
+  "--source=.",
+  "--remote=" ++ remote,
+])
+
+export publicRepo = newRepoWithConfig(Public)
+
+// default case
+export newRepo = publicRepo("origin")
