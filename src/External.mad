@@ -1,9 +1,11 @@
 import type { CommandResult } from "Process"
 import type { Wish } from "Wish"
 
+import { always, equals } from "Function"
 import IO from "IO"
 import { DEFAULT_COMMAND_OPTIONS, exec } from "Process"
 import { join } from "String"
+import { bad, chainRej, good } from "Wish"
 
 import { log } from "@/Log"
 
@@ -20,6 +22,49 @@ export run = (cmd, args) => {
   )(cmd)
 }
 
+export which = run("which")
+
+export exists = pipe(
+  of,
+  which,
+  map(
+    pipe(
+      .exitCode,
+      equals(0),
+    ),
+  ),
+  chainRej(
+    pipe(
+      .exitCode,
+      equals(0),
+      good,
+    ),
+  ),
+)
+
+// it's like run, but like, slower and safer
+walk :: String -> List String -> CommandWish
+export walk = (cmd, args) => pipe(
+  exists,
+  chain(
+    (valid) => {
+      failstring = "Command '" ++ cmd ++ "' does not exist"
+      return if (valid) {
+        run(cmd, args)
+      } else {
+        bad({
+          // 18 1 7 5
+          // r  a g e
+          exitCode: 18175,
+          stderr: failstring,
+          stdout: failstring,
+        })
+      }
+    },
+  ),
+)(cmd)
+
+export gh = run("gh")
 export curl = run("curl")
 export git = run("git")
 export rm = run("rm")
@@ -29,4 +74,3 @@ export rimraf = pipe(
   rm,
 )
 export mkdir = run("mkdir")
-export madlib = run("madlib")

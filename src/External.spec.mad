@@ -1,0 +1,12 @@
+import { always } from "Function"
+import IO from "IO"
+import { Error } from "Test"
+import { chainRej, good, mapRej } from "Wish"
+
+import { asyncReport, caseN2, report } from "Study"
+
+import { run, which } from "@/External"
+
+
+
+asyncReport(which, "which", [#["skibbledibble", false], #["git", true]])
