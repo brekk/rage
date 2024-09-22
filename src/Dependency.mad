@@ -1,0 +1,44 @@
+import type { Comparison } from "Compare"
+
+import type { Version } from "@/Dependency/Version"
+
+import { EQ, GT, LT } from "Compare"
+import {} from "Integer"
+import { fromMaybe } from "Maybe"
+import { split } from "String"
+
+import { Version, showVersion } from "@/Dependency/Version"
+
+
+
+export type Version
+export Version
+
+export alias StaticDependency = { description :: String, minVersion :: String, url :: String }
+
+export alias DependencyMap = Dictionary String String
+
+export type Dependency
+  = Dependency(
+    // description
+    String,
+    // minVersion
+    Version,
+    // url
+    String,
+  )
+
+abstract :: StaticDependency -> Dependency
+export abstract = (x) => Dependency(
+  x.description,
+  pipe(
+    scan,
+    fromMaybe(Version(0, 0, 0)),
+  )(x.minVersion),
+  x.url,
+)
+
+releaseUrl :: String -> String -> Version -> String
+export releaseUrl = (org, repo, v) => `https://github.com/${org}/${repo}/archive/refs/tags/v${
+  showVersion(v)
+}.zip`

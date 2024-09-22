@@ -1,0 +1,26 @@
+import { EQ, GT, LT } from "Compare"
+
+import { report } from "Study"
+
+import { Dependency, Version, abstract, releaseUrl } from "@/Dependency"
+
+
+
+report(
+  abstract,
+  "abstract",
+  [
+    #[
+      {
+        description: "Brunch",
+        minVersion: "4.3.21",
+        url: releaseUrl("brekk", "brunch", Version(4, 3, 21)),
+      },
+      Dependency(
+        "Brunch",
+        Version(4, 3, 21),
+        "https://github.com/brekk/brunch/archive/refs/tags/v4.3.21.zip",
+      ),
+    ],
+  ],
+)
