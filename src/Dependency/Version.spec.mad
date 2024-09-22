@@ -1,0 +1,20 @@
+import { caseN2, report } from "Study"
+
+import {
+  AnyVersion,
+  FromVersion,
+  UntilVersion,
+  Version,
+  bumpMajor,
+  bumpMinor,
+  bumpPatch,
+  createRange,
+  intersectRanges,
+  isInRange,
+  parse,
+  showVersion,
+} from "@/Dependency/Version"
+
+
+
+report(showVersion, "showVersion", [#[Version(1, 2, 3), "1.2.3"]])

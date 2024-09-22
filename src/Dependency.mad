@@ -38,7 +38,7 @@ export abstract = (x) => Dependency(
   x.url,
 )
 
-releaseUrl :: String -> String -> Version -> String
-export releaseUrl = (org, repo, v) => `https://github.com/${org}/${repo}/archive/refs/tags/v${
-  showVersion(v)
+ghReleaseUrl :: String -> String -> String -> String
+export ghReleaseUrl = (org, repo, s) => `https://github.com/${org}/${repo}/archive/refs/tags/v${
+  s
 }.zip`

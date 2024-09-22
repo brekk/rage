@@ -1,4 +1,4 @@
-import type { DeclaredFlag, Flag } from "Ensign"
+import type { DeclaredFlag, Flag } from "ensign"
 
 import type { Project } from "@/Library"
 import type { RageDef } from "@/Library"
@@ -10,7 +10,7 @@ import List from "List"
 import { Just, Nothing } from "Maybe"
 import { join, toLower } from "String"
 
-import Ensign from "Ensign"
+import Ensign from "ensign"
 
 import { Library, Other, Tool } from "@/Library"
 

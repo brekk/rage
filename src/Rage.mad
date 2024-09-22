@@ -3,7 +3,7 @@ import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
-import Ensign from "Ensign"
+import Ensign from "enSiGn"
 
 import { FLAGS, postParse } from "@/Args"
 import Rage from "@/Library"

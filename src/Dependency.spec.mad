@@ -2,7 +2,8 @@ import { EQ, GT, LT } from "Compare"
 
 import { report } from "Study"
 
-import { Dependency, Version, abstract, releaseUrl } from "@/Dependency"
+import { Dependency, Version, abstract, ghReleaseUrl } from "@/Dependency"
+import { showVersion } from "@/Dependency/Version"
 
 
 
@@ -14,7 +15,7 @@ report(
       {
         description: "Brunch",
         minVersion: "4.3.21",
-        url: releaseUrl("brekk", "brunch", Version(4, 3, 21)),
+        url: ghReleaseUrl("brekk", "brunch", showVersion(Version(4, 3, 21))),
       },
       Dependency(
         "Brunch",
