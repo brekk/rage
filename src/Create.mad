@@ -3,9 +3,9 @@ import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
-import Ensign from "enSiGn"
+import Ensign from "Ensign"
 
-import { FLAGS, postParse } from "@/Args"
+import { FLAGS, postParse } from "@/Create/Args"
 import Rage from "@/Library"
 import { log } from "@/Log"
 

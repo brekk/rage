@@ -1,4 +1,4 @@
-import type { DeclaredFlag, Flag } from "ensign"
+import type { DeclaredFlag, Flag } from "Ensign"
 
 import type { Project } from "@/Library"
 import type { RageDef } from "@/Library"
@@ -10,21 +10,21 @@ import List from "List"
 import { Just, Nothing } from "Maybe"
 import { join, toLower } from "String"
 
-import Ensign from "ensign"
+import E from "Ensign"
 
 import { Library, Other, Tool } from "@/Library"
 
 
 
 export FLAGS = [
-  Ensign.flagString("name", ["n"], "The name of the project"),
-  Ensign.flagString("description", ["d", "desc"], "Describe the project"),
-  Ensign.flagString("ignore", ["i"], "A path to a .gitignore source"),
-  Ensign.flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
-  Ensign.flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
-  Ensign.flagString("setRemote", ["r"], "Should we create a repo and set it as remote?"),
-  Ensign.flagString("remote", ["R"], "What should we call this remote? (default: origin)"),
-  Ensign.flagString("kind", ["k"], "What kind of project is this? (tool / library / other"),
+  E.flagString("name", ["n"], "The name of the project"),
+  E.flagString("description", ["d", "desc"], "Describe the project"),
+  E.flagString("ignore", ["i"], "A path to a .gitignore source"),
+  E.flagBoolean("aliases", ["a"], "Use `importAliases` in madlib.json?"),
+  E.flagBoolean("git", ["g"], "Run git init and pull .gitignore?"),
+  E.flagString("setRemote", ["r"], "Should we create a repo and set it as remote?"),
+  E.flagString("remote", ["R"], "What should we call this remote? (default: origin)"),
+  E.flagString("kind", ["k"], "What kind of project is this? (tool / library / other"),
 ]
 
 DEFAULT_RAGE_DEF :: RageDef
@@ -42,12 +42,12 @@ DEFAULT_RAGE_DEF = {
 
 
 export postParse = pipe(
-  Ensign.validate(FLAGS),
-  mapLeft(Ensign.printIssues),
+  E.validate(FLAGS),
+  mapLeft(E.printIssues),
   map(
     List.reduce(
       (agg, flag) => where(flag) {
-        Ensign.Flag(k, v) =>
+        E.Flag(k, v) =>
           if (k == "description") {
             { ...agg, description: v }
           } else if (k == "ignore") {
@@ -66,7 +66,7 @@ export postParse = pipe(
             agg
           }
 
-        Ensign.FlagToggle(k, v) =>
+        E.FlagToggle(k, v) =>
           if (k == "aliases") {
             { ...agg, useAliases: v }
           } else if (k == "git") {
