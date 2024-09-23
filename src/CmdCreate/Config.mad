@@ -1,0 +1,21 @@
+import type { Wish } from "Wish"
+
+import type { StatusFail, StatusPass } from "@/CmdCreate/Status"
+
+
+
+export type Project = Library | Tool | Other
+
+export alias RageDef = {
+  description :: String,
+  ignore :: String,
+  kind :: Project,
+  name :: String,
+  remote :: String,
+  setRemote :: Boolean,
+  template :: String,
+  useAliases :: Boolean,
+  useGit :: Boolean,
+}
+
+export alias RageState = Wish StatusFail StatusPass

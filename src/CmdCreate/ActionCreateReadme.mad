@@ -1,0 +1,23 @@
+import type { RageDef, RageState } from "@/CmdCreate/Config"
+
+import { apL } from "Applicative"
+import File from "File"
+
+import { statusReadme } from "@/CmdCreate/Status"
+
+
+
+_writeReadme :: RageDef -> RageState
+export _writeReadme = where {
+  { name, description } =>
+    pipe(
+      File.write(`${name}/README.md`),
+      statusReadme,
+    )(`# ${name}\n\n${description}`)
+}
+
+writeReadme :: RageDef -> RageState -> RageState
+export writeReadme = (def, s) => pipe(
+  _writeReadme,
+  apL($, s),
+)(def)

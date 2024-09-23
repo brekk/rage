@@ -1,0 +1,41 @@
+import type { RageDef, RageState } from "@/CmdCreate/Config"
+
+import { apL } from "Applicative"
+import File from "File"
+
+import { statusMain, statusSource } from "@/CmdCreate/Status"
+import Ext from "@/External"
+
+
+
+export rawMain = (name) => `import IO from "IO"
+
+main = () => {
+  pipe(
+    IO.pTrace("Main file for:"),
+  )("${name}")
+}`
+
+makeSourceAndMain :: RageDef -> RageState -> RageState
+export makeSourceAndMain = (def, s) => pipe(
+  where {
+    { name } =>
+      do {
+        dir <- pipe(
+          mappend($, "/src"),
+          of,
+          Ext.mkdir,
+          statusSource,
+        )(name)
+        file <- pipe(
+          rawMain,
+          File.write(`${name}/src/Main.mad`),
+          statusMain,
+        )(name)
+        return pipe(
+          of,
+        )(file)
+      }
+  },
+  apL($, s),
+)(def)

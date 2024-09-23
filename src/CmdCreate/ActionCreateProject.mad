@@ -1,0 +1,36 @@
+import type { RageDef, RageState } from "@/CmdCreate/Config"
+
+import File from "File"
+
+import { statusJson, statusScaffold } from "@/CmdCreate/Status"
+import Ext from "@/External"
+
+
+
+_rawJson = (name) => `{
+  "name": "${name}",
+  "version": "0.0.1",
+  "main": "src/Main.mad",
+  "importAliases": {
+    ".": "src"
+  }
+}`
+
+createMadlibProject :: RageDef -> RageState
+export createMadlibProject = where {
+  { name } =>
+    do {
+      dir <- pipe(
+        Ext.mkdir,
+        statusScaffold,
+      )([name])
+      file <- pipe(
+        _rawJson,
+        File.write(`${name}/madlib.json`),
+        statusJson,
+      )(name)
+      return pipe(
+        of,
+      )(file)
+    }
+}

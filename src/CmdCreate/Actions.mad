@@ -1,0 +1,18 @@
+import type { RageDef, RageState } from "@/CmdCreate/Config"
+
+import { identity } from "Function"
+
+import { createMadlibProject } from "@/CmdCreate/ActionCreateProject"
+import { writeReadme } from "@/CmdCreate/ActionCreateReadme"
+import { makeSourceAndMain } from "@/CmdCreate/ActionCreateSourceFolder"
+import { runGitCommands } from "@/CmdCreate/ActionGit"
+
+
+
+create :: RageDef -> RageState
+export create = (def) => pipe(
+  createMadlibProject,
+  writeReadme(def),
+  makeSourceAndMain(def),
+  def.useGit ? runGitCommands(def) : identity,
+)(def)

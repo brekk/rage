@@ -1,0 +1,18 @@
+import { always } from "Function"
+import {} from "Wish"
+
+import { log } from "@/Log"
+
+
+
+export signal = (_bad, _good) => bimap(
+  pipe(
+    log.detail("signal, pre-fail"),
+    always(_bad),
+    log.error("ERROR"),
+  ),
+  pipe(
+    always(_good),
+    log.status("PROGRESS"),
+  ),
+)

@@ -1,0 +1,98 @@
+/*
+export handleProjectError = where {
+  ScaffoldFail =>
+    "Unable to create project scaffold"
+
+  JsonNotCreated =>
+    "Unable to create madlib.json"
+
+  ReadmeNotUpdated =>
+    "Unable to alter README.md"
+
+  RepoNotInitialized =>
+    "Unable to initialize git repository"
+
+  InvalidRepo =>
+    "Given repo is not valid"
+
+  InvalidTemplate =>
+    "Given template repo is not valid"
+
+  InvalidIgnore =>
+    "Unable to copy the .gitignore file via curl"
+
+  SourceFail =>
+    "Unable to create /src folder"
+
+  MainFail =>
+    "Unable to create src/Main.mad file"
+
+  GenericError =>
+    "The machine is sick"
+}
+
+
+export handleProjectStatus = where {
+  Scaffold =>
+    "Created project folder"
+
+  GitIgnored =>
+    "Pulled a .gitignore file via curl"
+
+  JsonCreated =>
+    "Created the madlib.json file"
+
+  ReadmeUpdated =>
+    "Updated the project README.md"
+
+  RepoInitialized =>
+    "Git repo initialized"
+
+  RepoCreated =>
+    "Created github repo programmatically"
+
+  RemoteSet =>
+    "Set git remote"
+
+  SourceCreated =>
+    "Created /src folder"
+
+  MainCreated =>
+    "Created src/Main.mad file"
+
+  Ready =>
+    "Got mad, quickly"
+}
+*/
+
+export type StatusPair b g = Bad(b) | Good(g)
+
+
+export type StatusFail
+  = ScaffoldFail
+  | JsonFail
+  | ReadmeFail
+  | InitFail
+  | RepoFail
+  | IgnoreFail
+  | SourceFail
+  | MainFail
+
+export type StatusPass
+  = ScaffoldPass
+  | JsonPass
+  | ReadmePass
+  | InitPass
+  | RepoPass
+  | IgnorePass
+  | SourcePass
+  | MainPass
+
+export statusScaffold = signal(ScaffoldFail, ScaffoldPass)
+export statusJson = signal(JsonFail, JsonPass)
+export statusReadme = signal(ReadmeFail, ReadmePass)
+export statusInit = signal(InitFail, InitPass)
+export statusRepo = signal(RepoFail, RepoPass)
+export statusIgnore = signal(IgnoreFail, IgnorePass)
+export statusSource = signal(SourceFail, SourcePass)
+export statusMain = signal(MainFail, MainPass)

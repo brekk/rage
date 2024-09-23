@@ -1,0 +1,44 @@
+import type { RageDef, RageState } from "@/CmdCreate/Config"
+import type { CommandWish } from "@/External"
+
+import { apL } from "Applicative"
+
+import { statusIgnore, statusInit } from "@/CmdCreate/Status"
+import Ext from "@/External"
+import Git from "@/Git"
+
+
+
+_pullGitignore :: RageDef -> CommandWish
+export _pullGitignore = where {
+  { name, ignore } =>
+    Ext.curl([ignore, "-o", `${name}/.gitignore`])
+}
+
+pullGitignore :: RageDef -> RageState
+export pullGitignore = pipe(
+  _pullGitignore,
+  statusIgnore,
+)
+
+
+gitInit :: String -> RageState
+gitInit = pipe(
+  Git.init,
+  statusInit,
+)
+
+
+runGitCommands :: RageDef -> RageState -> RageState
+export runGitCommands = (def, s) => pipe(
+  where {
+    { name } =>
+      do {
+        i <- gitInit(name)
+        g <- pullGitignore(def)
+        // r <- setGitRemote(name, repo)
+        return of(g)
+      }
+  },
+  apL($, s),
+)(def)
