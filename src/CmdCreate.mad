@@ -5,36 +5,32 @@ import Wish from "Wish"
 
 import Ensign from "Ensign"
 
+import { create } from "@/CmdCreate/Actions"
 import { FLAGS, postParse } from "@/CmdCreate/Args"
-import Rage from "@/Library"
+import { handleProjectError, handleProjectStatus } from "@/CmdCreate/Status"
 import { log } from "@/Log"
 
 
 
-main = (rawArgs) => {
-  pipe(
-    List.drop(1),
-    log.detailArgs("raw args"),
-    Ensign.parseFlags,
-    log.detailParsed("flags parsed!"),
-    postParse,
-    log.detailParsed("consolidated flags!"),
-    map(
-      pipe(
-        Rage.create,
-        Wish.fulfill(
-          pipe(
-            Rage.handleProjectError,
-            IO.pTrace("BAD!"),
-            noop,
-          ),
-          pipe(
-            Rage.handleProjectStatus,
-            IO.pTrace("GOOD!"),
-            noop,
-          ),
+export cmdCreate = pipe(
+  log.detailArgs("raw args"),
+  Ensign.parseFlags,
+  log.detailParsed("flags parsed!"),
+  postParse,
+  log.detailParsed("consolidated flags!"),
+  map(
+    pipe(
+      create,
+      bimap(
+        pipe(
+          handleProjectError,
+          IO.pTrace("BAD!"),
+        ),
+        pipe(
+          handleProjectStatus,
+          IO.pTrace("GOOD!"),
         ),
       ),
     ),
-  )(rawArgs)
-}
+  ),
+)

@@ -6,27 +6,20 @@ import { indicate } from "@/aggreGATE"
 
 
 
-/*
 export handleProjectError = where {
+  InitFail =>
+    "Unable to initialize git project"
+
   ScaffoldFail =>
     "Unable to create project scaffold"
 
-  JsonNotCreated =>
+  JsonFail =>
     "Unable to create madlib.json"
 
-  ReadmeNotUpdated =>
+  ReadmeFail =>
     "Unable to alter README.md"
 
-  RepoNotInitialized =>
-    "Unable to initialize git repository"
-
-  InvalidRepo =>
-    "Given repo is not valid"
-
-  InvalidTemplate =>
-    "Given template repo is not valid"
-
-  InvalidIgnore =>
+  IgnoreFail =>
     "Unable to copy the .gitignore file via curl"
 
   SourceFail =>
@@ -34,51 +27,40 @@ export handleProjectError = where {
 
   MainFail =>
     "Unable to create src/Main.mad file"
-
-  GenericError =>
-    "The machine is sick"
 }
 
 
 export handleProjectStatus = where {
-  Scaffold =>
+  ScaffoldPass =>
     "Created project folder"
 
-  GitIgnored =>
+  IgnorePass =>
     "Pulled a .gitignore file via curl"
 
-  JsonCreated =>
+  JsonPass =>
     "Created the madlib.json file"
 
-  ReadmeUpdated =>
+  ReadmePass =>
     "Updated the project README.md"
 
-  RepoInitialized =>
+  InitPass =>
     "Git repo initialized"
 
-  RepoCreated =>
-    "Created github repo programmatically"
-
-  RemoteSet =>
-    "Set git remote"
-
-  SourceCreated =>
+  SourcePass =>
     "Created /src folder"
 
-  MainCreated =>
+  MainPass =>
     "Created src/Main.mad file"
 
-  Ready =>
+  AllPass =>
     "Got mad, quickly"
 }
-*/
 
 export type StatusFail
   = ScaffoldFail
   | JsonFail
   | ReadmeFail
   | InitFail
-  | RepoFail
   | IgnoreFail
   | SourceFail
   | MainFail
@@ -88,17 +70,16 @@ export type StatusPass
   | JsonPass
   | ReadmePass
   | InitPass
-  | RepoPass
   | IgnorePass
   | SourcePass
   | MainPass
+  | AllPass
 
 
 export statusScaffold = signal(Left(ScaffoldFail), Right(ScaffoldPass))
 export statusJson = signal(Left(JsonFail), Right(JsonPass))
 export statusReadme = signal(Left(ReadmeFail), Right(ReadmePass))
 export statusInit = signal(Left(InitFail), Right(InitPass))
-export statusRepo = signal(Left(RepoFail), Right(RepoPass))
 export statusIgnore = signal(Left(IgnoreFail), Right(IgnorePass))
 export statusSource = signal(Left(SourceFail), Right(SourcePass))
 export statusMain = signal(Left(MainFail), Right(MainPass))

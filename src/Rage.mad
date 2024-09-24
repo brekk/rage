@@ -1,0 +1,29 @@
+import { noop } from "Function"
+import IO from "IO"
+import List from "List"
+import Wish from "Wish"
+
+
+
+// import { cmdCreate } from "@/CmdCreate"
+
+
+
+deadEnd = Wish.fulfill(
+  pipe(
+    IO.pTrace("BAD!"),
+    noop,
+  ),
+  pipe(
+    IO.pTrace("GOOD!"),
+    noop,
+  ),
+)
+
+main = (args) => {
+  pipe(
+    List.drop(1),
+    IO.pTrace("RAWWWW"),
+  )(args)
+  // deadEnd 
+}
