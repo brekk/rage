@@ -1,7 +1,7 @@
 import { always } from "Function"
 import {} from "Wish"
 
-import { log } from "@/Log"
+import { log } from "@/log"
 
 
 

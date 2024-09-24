@@ -1,3 +1,11 @@
+import { Left, Right } from "Either"
+import {} from "Wish"
+
+import { signal } from "@/Wish"
+import { indicate } from "@/aggreGATE"
+
+
+
 /*
 export handleProjectError = where {
   ScaffoldFail =>
@@ -65,9 +73,6 @@ export handleProjectStatus = where {
 }
 */
 
-export type StatusPair b g = Bad(b) | Good(g)
-
-
 export type StatusFail
   = ScaffoldFail
   | JsonFail
@@ -88,11 +93,12 @@ export type StatusPass
   | SourcePass
   | MainPass
 
-export statusScaffold = signal(ScaffoldFail, ScaffoldPass)
-export statusJson = signal(JsonFail, JsonPass)
-export statusReadme = signal(ReadmeFail, ReadmePass)
-export statusInit = signal(InitFail, InitPass)
-export statusRepo = signal(RepoFail, RepoPass)
-export statusIgnore = signal(IgnoreFail, IgnorePass)
-export statusSource = signal(SourceFail, SourcePass)
-export statusMain = signal(MainFail, MainPass)
+
+export statusScaffold = signal(Left(ScaffoldFail), Right(ScaffoldPass))
+export statusJson = signal(Left(JsonFail), Right(JsonPass))
+export statusReadme = signal(Left(ReadmeFail), Right(ReadmePass))
+export statusInit = signal(Left(InitFail), Right(InitPass))
+export statusRepo = signal(Left(RepoFail), Right(RepoPass))
+export statusIgnore = signal(Left(IgnoreFail), Right(IgnorePass))
+export statusSource = signal(Left(SourceFail), Right(SourcePass))
+export statusMain = signal(Left(MainFail), Right(MainPass))

@@ -1,4 +1,4 @@
-import type { RageDef } from "@/Library"
+import type { RageDef } from "@/CmdCreate/Config"
 
 import { mapLeft } from "Either"
 import List from "List"
@@ -6,7 +6,7 @@ import { toLower } from "String"
 
 import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
 
-import { Library, Other, Tool } from "@/Library"
+import { Library, Other, Tool } from "@/CmdCreate/Config"
 
 
 

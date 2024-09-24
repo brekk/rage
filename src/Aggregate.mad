@@ -1,0 +1,43 @@
+import type { Either } from "Either"
+import type { Wish } from "Wish"
+
+import { Left, Right, isLeft } from "Either"
+import { always } from "Function"
+import List from "List"
+
+import { log } from "@/Log"
+
+
+
+/*
+We have values that represent success or failure
+Since things are happening asynchronously _and_ we might want to recover from them, we need to have a structure which encapsulates a list of failures and successes so we can enumerate them later
+
+We've currently abstracted things away so that we don't have to be stateful.
+
+It would be nice to have some means of injecting status but continue to keep things separated.
+
+
+*/
+
+export alias Events = #[List (Either a b), List (Either a b)]
+
+aggregate :: Either a b -> Events -> Events
+export aggregate = (x, stack) => where(stack) {
+  #[fails, passes] =>
+    isLeft(x) ? #[List.append(x, fails), passes] : #[fails, List.append(x, passes)]
+}
+
+indicate :: a -> b -> Events -> Wish c d -> Events
+export indicate = (_bad, _good, stack, x) => bimap(
+  (_) => pipe(
+    log.detail("signal, pre-fail"),
+    aggregate($, stack),
+    log.error("ERROR"),
+  )(_bad),
+  (_) => pipe(
+    aggregate($, stack),
+    log.status("PROGRESS"),
+  )(_good),
+  x,
+)

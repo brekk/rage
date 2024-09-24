@@ -5,7 +5,7 @@ import Wish from "Wish"
 
 import Ensign from "Ensign"
 
-import { FLAGS, postParse } from "@/Create/Args"
+import { FLAGS, postParse } from "@/CmdCreate/Args"
 import Rage from "@/Library"
 import { log } from "@/Log"
 
