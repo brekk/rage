@@ -28,6 +28,7 @@ export aggregate = (x, stack) => where(stack) {
     isLeft(x) ? #[List.append(x, fails), passes] : #[fails, List.append(x, passes)]
 }
 
+/*
 indicate :: a -> b -> Events -> Wish c d -> Events
 export indicate = (_bad, _good, stack, x) => bimap(
   (_) => pipe(
@@ -41,3 +42,4 @@ export indicate = (_bad, _good, stack, x) => bimap(
   )(_good),
   x,
 )
+*/

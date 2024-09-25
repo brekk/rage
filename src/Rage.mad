@@ -3,9 +3,7 @@ import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
-
-
-// import { cmdCreate } from "@/CmdCreate"
+import { cmdCreate } from "@/CmdCreate"
 
 
 

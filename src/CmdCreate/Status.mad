@@ -2,7 +2,10 @@ import { Left, Right } from "Either"
 import {} from "Wish"
 
 import { signal } from "@/Wish"
-import { indicate } from "@/aggreGATE"
+
+
+
+// import { indicate } from "@/aggreGATE"
 
 
 
@@ -76,10 +79,10 @@ export type StatusPass
   | AllPass
 
 
-export statusScaffold = signal(Left(ScaffoldFail), Right(ScaffoldPass))
-export statusJson = signal(Left(JsonFail), Right(JsonPass))
-export statusReadme = signal(Left(ReadmeFail), Right(ReadmePass))
-export statusInit = signal(Left(InitFail), Right(InitPass))
-export statusIgnore = signal(Left(IgnoreFail), Right(IgnorePass))
-export statusSource = signal(Left(SourceFail), Right(SourcePass))
-export statusMain = signal(Left(MainFail), Right(MainPass))
+export statusScaffold = signal(ScaffoldFail, ScaffoldPass)
+export statusJson = signal(JsonFail, JsonPass)
+export statusReadme = signal(ReadmeFail, ReadmePass)
+export statusInit = signal(InitFail, InitPass)
+export statusIgnore = signal(IgnoreFail, IgnorePass)
+export statusSource = signal(SourceFail, SourcePass)
+export statusMain = signal(MainFail, MainPass)
