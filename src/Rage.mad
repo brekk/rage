@@ -1,9 +1,13 @@
+import { Right } from "Either"
 import { noop } from "Function"
 import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
+import E from "Ensign"
+
 import { cmdCreate } from "@/CmdCreate"
+import CmdCreateArgs from "@/CmdCreate/Args"
 
 
 
@@ -18,10 +22,32 @@ deadEnd = Wish.fulfill(
   ),
 )
 
+printHelp = () => pipe(
+  List.concat(CmdCreateArgs.FLAGS),
+  E.printLegend,
+  Wish.good,
+  Right,
+)([])
+
 main = (args) => {
   pipe(
     List.drop(1),
     IO.pTrace("RAWWWW"),
+    where {
+      [cmd, ...rawArgs] =>
+        do {
+          IO.pTrace("CMD?", cmd)
+          return if (cmd == "create") {
+            cmdCreate(rawArgs)
+          } else {
+            printHelp()
+          }
+        }
+
+      _ =>
+        printHelp()
+    },
+    map(deadEnd),
   )(args)
   // deadEnd 
 }
