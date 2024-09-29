@@ -7,13 +7,12 @@ import type { StatusFail, StatusPass } from "@/CmdCreate/Status"
 export type Project = Library | Tool | Other
 
 export alias RageDef = {
+  createRepo :: Boolean,
   description :: String,
+  dryRun :: Boolean,
   ignore :: String,
   kind :: Project,
   name :: String,
-  remote :: String,
-  setRemote :: Boolean,
-  template :: String,
   useAliases :: Boolean,
   useGit :: Boolean,
 }

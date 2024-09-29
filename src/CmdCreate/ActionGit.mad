@@ -2,10 +2,12 @@ import type { RageDef, RageState } from "@/CmdCreate/Config"
 import type { CommandWish } from "@/External"
 
 import { apL } from "Applicative"
+import { good } from "Wish"
 
-import { statusIgnore, statusInit } from "@/CmdCreate/Status"
+import { RepoSkipped, statusIgnore, statusInit, statusRepo } from "@/CmdCreate/Status"
 import Ext from "@/External"
 import Git from "@/Git"
+import Gh from "@/Github"
 
 
 
@@ -28,16 +30,36 @@ gitInit = pipe(
   statusInit,
 )
 
+// TODO: add a visibility filter to CmdCreate
+_githubRepo :: RageDef -> CommandWish
+export _githubRepo = where {
+  { description } =>
+    Gh.publicRepo(description)
+}
+
+githubRepo :: RageDef -> RageState
+export githubRepo = (def) => where(def) {
+  { createRepo } =>
+    if (createRepo) {
+      pipe(
+        _githubRepo,
+        statusRepo,
+      )(def)
+    } else {
+      good(RepoSkipped)
+    }
+}
+
 
 runGitCommands :: RageDef -> RageState -> RageState
 export runGitCommands = (def, s) => pipe(
   where {
-    { name } =>
+    { createRepo, name } =>
       do {
         i <- gitInit(name)
         g <- pullGitignore(def)
-        // r <- setGitRemote(name, repo)
-        return of(g)
+        x <- githubRepo(def)
+        return of(x)
       }
   },
   apL($, s),

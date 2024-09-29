@@ -28,6 +28,9 @@ export handleProjectError = where {
   SourceFail =>
     "Unable to create /src folder"
 
+  RepoFail =>
+    "Unable to create repo on github"
+
   MainFail =>
     "Unable to create src/Main.mad file"
 }
@@ -52,6 +55,12 @@ export handleProjectStatus = where {
   SourcePass =>
     "Created /src folder"
 
+  RepoPass =>
+    "Created a repo on github"
+
+  RepoSkipped =>
+    "Skipped creating a repo on github"
+
   MainPass =>
     "Created src/Main.mad file"
 
@@ -65,6 +74,7 @@ export type StatusFail
   | ReadmeFail
   | InitFail
   | IgnoreFail
+  | RepoFail
   | SourceFail
   | MainFail
 
@@ -74,6 +84,8 @@ export type StatusPass
   | ReadmePass
   | InitPass
   | IgnorePass
+  | RepoPass
+  | RepoSkipped
   | SourcePass
   | MainPass
   | AllPass
@@ -84,5 +96,6 @@ export statusJson = signal(JsonFail, JsonPass)
 export statusReadme = signal(ReadmeFail, ReadmePass)
 export statusInit = signal(InitFail, InitPass)
 export statusIgnore = signal(IgnoreFail, IgnorePass)
+export statusRepo = signal(RepoFail, RepoPass)
 export statusSource = signal(SourceFail, SourcePass)
 export statusMain = signal(MainFail, MainPass)

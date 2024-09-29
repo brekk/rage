@@ -19,18 +19,13 @@ export printVisibility = where {
     "--internal"
 }
 
-newRepoWithConfig :: Visibility -> String -> String -> String -> CommandWish
-export newRepoWithConfig = (vis, remote, name, description) => hub([
+newRepoWithConfig :: Visibility -> String -> CommandWish
+export newRepoWithConfig = (vis, description) => hub([
   "repo",
   "create",
-  name,
-  printVisibility(vis),
   "--description=" ++ description,
   "--source=.",
-  "--remote=" ++ remote,
+  printVisibility(vis),
 ])
 
 export publicRepo = newRepoWithConfig(Public)
-
-// default case
-export newRepo = publicRepo("origin")
