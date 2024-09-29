@@ -2,10 +2,10 @@ import type { RageDef, RageState } from "@/CmdCreate/Config"
 
 import { identity } from "Function"
 
-import { createMadlibProject } from "@/CmdCreate/ActionCreateProject"
-import { writeReadme } from "@/CmdCreate/ActionCreateReadme"
-import { makeSourceAndMain } from "@/CmdCreate/ActionCreateSourceFolder"
-import { runGitCommands } from "@/CmdCreate/ActionGit"
+import { createMadlibProject } from "@/CmdCreate/Actions/CreateProject"
+import { writeReadme } from "@/CmdCreate/Actions/CreateReadme"
+import { makeSourceAndMain } from "@/CmdCreate/Actions/CreateSource"
+import { runGitCommands } from "@/CmdCreate/Actions/Git"
 
 
 
