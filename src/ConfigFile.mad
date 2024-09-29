@@ -1,0 +1,39 @@
+// import type { RageDef } from "@/CmdCreate/Config"
+import type { Maybe } from "Maybe"
+
+import type { StaticDependency } from "@/Dependency"
+
+import Json from "Json/Parse"
+
+import { dependencies } from "@/MadlibJson"
+
+
+
+/*
+we can't extend RageDef directly, there are too many one off fields
+such as:
+ - name
+ - description
+ - kind
+ - remote
+*/
+export alias RageConfig = {
+  dependencies :: Maybe (List StaticDependency),
+  ignore :: String,
+  useAliases :: Boolean,
+  useGit :: Boolean,
+}
+
+__configFile :: String -> Boolean -> Boolean -> Maybe (List StaticDependency) -> RageConfig
+__configFile = (ignore, useAliases, useGit, deps) => (
+  { ignore, useAliases, useGit, dependencies: deps }
+)
+
+configFile :: Json.Parser RageConfig
+export configFile = Json.map4(
+  __configFile,
+  Json.field("ignore", Json.string),
+  Json.field("useAliases", Json.boolean),
+  Json.field("useGit", Json.boolean),
+  Json.maybe(dependencies),
+)

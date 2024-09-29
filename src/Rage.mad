@@ -2,6 +2,7 @@ import { Right } from "Either"
 import { noop } from "Function"
 import IO from "IO"
 import List from "List"
+import String from "String"
 import Wish from "Wish"
 
 import E from "Ensign"
@@ -17,17 +18,17 @@ deadEnd = Wish.fulfill(
     noop,
   ),
   pipe(
-    IO.pTrace("GOOD!"),
-    noop,
+    IO.put,
   ),
 )
 
 printHelp = () => pipe(
-  List.concat(CmdCreateArgs.FLAGS),
-  E.printLegend,
+  map(where { #[n, args] => "## `rage " ++ n ++ "`\n\n" ++ E.printLegend(args) }),
+  String.join("\n"),
+  mappend("# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
   Wish.good,
   Right,
-)([])
+)([#["create", CmdCreateArgs.FLAGS]])
 
 main = (args) => {
   pipe(

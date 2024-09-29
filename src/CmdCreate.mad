@@ -13,24 +13,12 @@ import { log } from "@/Log"
 
 
 export cmdCreate = pipe(
-  log.detailArgs("raw args"),
   Ensign.parseFlags,
-  log.detailParsed("flags parsed!"),
   postParse,
-  log.detailParsed("consolidated flags!"),
   map(
     pipe(
       create,
-      bimap(
-        pipe(
-          handleProjectError,
-          IO.pTrace("BAD!"),
-        ),
-        pipe(
-          handleProjectStatus,
-          IO.pTrace("GOOD!"),
-        ),
-      ),
+      bimap(handleProjectError, handleProjectStatus),
     ),
   ),
 )
