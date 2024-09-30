@@ -1,9 +1,14 @@
-// import type { RageDef } from "@/CmdCreate/Config"
+import type { Either } from "Either"
 import type { Maybe } from "Maybe"
+import type { Wish } from "Wish"
 
 import type { StaticDependency } from "@/Dependency"
 
+import { mapLeft } from "Either"
+import File from "File"
+import { always } from "Function"
 import Json from "Json/Parse"
+import P from "Parse"
 
 import { dependencies } from "@/MadlibJson"
 
@@ -36,4 +41,15 @@ export configFile = Json.map4(
   Json.field("useAliases", Json.boolean),
   Json.field("useGit", Json.boolean),
   Json.maybe(dependencies),
+)
+
+parseConfigFile :: String -> Either String RageConfig
+export parseConfigFile = pipe(
+  Json.parse(configFile),
+  mapLeft(always("Unable to read rage config")),
+)
+
+export readConfigFile = pipe(
+  File.read,
+  map(parseConfigFile),
 )

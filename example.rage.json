@@ -1,0 +1,12 @@
+{
+  "ignore": "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
+  "useAliases": true,
+  "useGit": true,
+  "dependencies": [
+    {
+      "url": "https://github.com/brekk/study/archive/refs/tags/v0.0.3.zip",
+      "description": "Study",
+      "minVersion": "0.0.3"
+    }
+  ]
+}

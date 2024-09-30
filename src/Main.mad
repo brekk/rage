@@ -2,7 +2,10 @@ import { always, noop } from "Function"
 import IO from "IO"
 import { fulfill } from "Wish"
 
-import Ext from "@/External"
+// import Ext from "@/External"
+import {
+  readConfigFile,
+} from "@/ConfigFile"
 
 
 
@@ -13,14 +16,14 @@ main = () => {
       noop,
     ),
     pipe(
+      show,
       IO.put,
       noop,
     ),
   )
 
   pipe(
-    Ext.walk($, ["status"]),
-    map(.stdout),
+    readConfigFile,
     undertaker,
-  )("git")
+  )("./example.rage.json")
 }
