@@ -1,3 +1,4 @@
+import type { Maybe } from "Maybe"
 import type { Wish } from "Wish"
 
 import type { StatusFail, StatusPass } from "@/CmdCreate/Status"
@@ -8,6 +9,7 @@ import type { Visibility } from "@/Github"
 export type Project = Library | Tool | Other
 
 export alias RageDef = {
+  configFile :: Maybe String,
   createRepo :: Boolean,
   description :: String,
   dryRun :: Boolean,
