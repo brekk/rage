@@ -1,5 +1,6 @@
 - [ ] - add support for adding dependencies
-- [ ] - finish wiring `gh` for creating repositories from the command line
+- [/] - finish wiring `gh` for creating repositories from the command line
 - [ ] - wire an integration tool so that we can run `rage create` and then programmatically delete it after
 - [ ] - add a config for browser based builds
-- [ ] - create a config file (library?)
+- [/] - create a config file (library?)
+- [x] - add visibility config to `create`, i.e. `create --public`

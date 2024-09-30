@@ -1,4 +1,5 @@
 import type { RageDef } from "@/CmdCreate/Config"
+import type { Visibility } from "@/Github"
 
 import { mapLeft } from "Either"
 import List from "List"
@@ -7,6 +8,7 @@ import { toLower } from "String"
 import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
 
 import { Library, Other, Tool } from "@/CmdCreate/Config"
+import { Internal, Private, Public } from "@/Github"
 
 
 
@@ -19,6 +21,11 @@ export FLAGS = [
   flagString("kind", ["k"], "What kind of project is this? (tool / library / other"),
   flagBoolean("createRepo", ["r"], "Should we create a new repo? (Requires `gh` configuration)"),
   flagBoolean("dryRun", ["safe", "s"], "Should we print commands rather than running them?"),
+  flagBoolean(
+    "visibility",
+    ["p"],
+    "Set the access level of the repo (Only applied when `createRepo` is true)",
+  ),
 ]
 
 DEFAULT_RAGE_DEF :: RageDef
@@ -31,6 +38,7 @@ DEFAULT_RAGE_DEF = {
   name: "",
   useAliases: true,
   useGit: true,
+  visibility: Public,
 }
 
 
@@ -51,6 +59,10 @@ export postParse = pipe(
             v2 = toLower(v)
             kind = v2 == "library" ? Library : v2 == "tool" ? Tool : Other
             return { ...agg, kind }
+          } else if (k == "visibility") do {
+            v2 = toLower(k)
+            visibility = v2 == "public" ? Public : v2 == "private" ? Private : Internal
+            return { ...agg, visibility }
           } else {
             agg
           }

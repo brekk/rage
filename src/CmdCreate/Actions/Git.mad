@@ -30,11 +30,10 @@ gitInit = pipe(
   statusInit,
 )
 
-// TODO: add a visibility filter to CmdCreate
 _githubRepo :: RageDef -> CommandWish
 export _githubRepo = where {
-  { description } =>
-    Gh.publicRepo(description)
+  { description, visibility } =>
+    Gh.newRepoWithConfig(visibility, description)
 }
 
 githubRepo :: RageDef -> RageState

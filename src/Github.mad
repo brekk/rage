@@ -27,5 +27,3 @@ export newRepoWithConfig = (vis, description) => hub([
   "--source=.",
   printVisibility(vis),
 ])
-
-export publicRepo = newRepoWithConfig(Public)

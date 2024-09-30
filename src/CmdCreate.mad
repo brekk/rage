@@ -1,12 +1,7 @@
-import { noop } from "Function"
-import IO from "IO"
-import List from "List"
-import Wish from "Wish"
-
 import Ensign from "Ensign"
 
 import { create } from "@/CmdCreate/Actions"
-import { FLAGS, postParse } from "@/CmdCreate/Args"
+import { postParse } from "@/CmdCreate/Args"
 import { handleProjectError, handleProjectStatus } from "@/CmdCreate/Status"
 import { log } from "@/Log"
 

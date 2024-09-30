@@ -1,6 +1,7 @@
 import type { Wish } from "Wish"
 
 import type { StatusFail, StatusPass } from "@/CmdCreate/Status"
+import type { Visibility } from "@/Github"
 
 
 
@@ -15,6 +16,7 @@ export alias RageDef = {
   name :: String,
   useAliases :: Boolean,
   useGit :: Boolean,
+  visibility :: Visibility,
 }
 
 export alias RageState = Wish StatusFail StatusPass
