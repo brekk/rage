@@ -1,4 +1,4 @@
-import type { RageDef } from "@/CmdCreate/Config"
+pmport type { RageDef } from "@/CmdCreate/Config"
 import type { Visibility } from "@/Github"
 
 import { mapLeft } from "Either"
