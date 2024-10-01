@@ -1,4 +1,11 @@
+import type { Either } from "Either"
+import type { Error } from "File"
+import type { Wish } from "Wish"
+
+import type { DeclaredFlag, Flag } from "Ensign"
+
 import type { RageDef } from "@/CmdCreate/Config"
+import type { RageConfig } from "@/ConfigFile"
 import type { Visibility } from "@/Github"
 
 import { Right, mapLeft } from "Either"
@@ -31,8 +38,9 @@ export FLAGS = [
   flagString("configFile", ["f"], "Load a rage config file"),
 ]
 
+// TODO: we might we want replace some configuration with a Maybe, so we can encapsulate the idea of something being unset at first
 DEFAULT_RAGE_DEF :: RageDef
-DEFAULT_RAGE_DEF = {
+export DEFAULT_RAGE_DEF = {
   createRepo: false,
   description: "",
   dryRun: false,
@@ -46,7 +54,8 @@ DEFAULT_RAGE_DEF = {
 }
 
 
-firstPass = (agg, flag) => where(flag) {
+reifyParsedFlags :: RageDef -> Flag -> RageDef
+export reifyParsedFlags = (agg, flag) => where(flag) {
   Flag(k, v) =>
     if (k == "description") {
       { ...agg, description: v }
@@ -62,8 +71,8 @@ firstPass = (agg, flag) => where(flag) {
       v2 = toLower(k)
       visibility = v2 == "public" ? Public : v2 == "private" ? Private : Internal
       return { ...agg, visibility }
-      // } else if (k == "configFile") {
-      //   { ...agg, configFile: Just(v) }
+    } else if (k == "configFile") {
+      { ...agg, configFile: Just(v) }
     } else {
       agg
     }
@@ -82,50 +91,66 @@ firstPass = (agg, flag) => where(flag) {
     }
 }
 
-/*
-secondPass = (inputs) => pipe(
+mergeConfigFile :: RageDef -> RageConfig -> RageDef
+export mergeConfigFile = (parsedDef, raw) => where(raw) {
+  { ignore, useAliases, useGit } =>
+    (
+      {
+        ...parsedDef,
+        ignore: if (parsedDef.ignore != ignore) {
+          parsedDef.ignore
+        } else {
+          ignore
+        },
+        useAliases: if (parsedDef.useAliases != useAliases) {
+          parsedDef.useAliases
+        } else {
+          useAliases
+        },
+        useGit: if (parsedDef.useGit != useGit) {
+          parsedDef.useGit
+        } else {
+          useGit
+        },
+      }
+    )
+}
+
+readConfigFileAndMerge :: RageDef -> String -> Wish Error RageDef
+readConfigFileAndMerge = (parsedDef, x) => pipe(
+  readConfigFile,
+  map(
+    where {
+      Right(raw) =>
+        mergeConfigFile(parsedDef, raw)
+
+      _ =>
+        parsedDef
+    },
+  ),
+)(x)
+
+
+applyConfigFile :: RageDef -> RageDef
+export applyConfigFile = (parsedDef) => pipe(
   .configFile,
   where {
     Nothing =>
-      inputs
+      parsedDef
 
     Just(filePath) =>
-      where(inputs) {
-        { createRepo, description, dryRun, ignore, kind, name, useAliases, useGit, visibility } =>
-          pipe(
-            readConfigFile,
-            map(
-              where {
-                Right(raw) =>
-                  (
-                    {
-                      ...raw,
-                      createRepo,
-                      description,
-                      dryRun,
-                      ignore,
-                      kind,
-                      name,
-                      useAliases,
-                      useGit,
-                      visibility,
-                    }
-                  )
-
-                _ =>
-                  inputs
-              },
-            ),
-          )(filePath)
-      }
+      readConfigFileAndMerge(parsedDef, filePath)
   },
-)(inputs)
-*/
+)(parsedDef)
 
+postParse :: List Flag -> Either String RageDef
 export postParse = pipe(
   validate(FLAGS),
   mapLeft(printIssues),
-  map(List.reduce(firstPass, DEFAULT_RAGE_DEF)),
-  // secondPass,
-
+  map(
+    pipe(
+      List.reduce(reifyParsedFlags, DEFAULT_RAGE_DEF),
+      applyConfigFile,
+    ),
+  ),
 )

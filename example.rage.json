@@ -1,7 +1,8 @@
 {
-  "ignore": "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
+  "tempignore": "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
+  "ignore": "https://raw.githubusercontent.com/brekk/orthography/refs/heads/main/src/Orthography.mad",
   "useAliases": true,
-  "useGit": true,
+  "useGit": false,
   "dependencies": [
     {
       "url": "https://github.com/brekk/study/archive/refs/tags/v0.0.3.zip",

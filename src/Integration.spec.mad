@@ -1,4 +1,6 @@
 import { always } from "Function"
+import IO from "IO"
+import String from "String"
 import { Error } from "Test"
 import { mapRej } from "Wish"
 
@@ -10,10 +12,66 @@ import { create, rageExe } from "@/Integration"
 
 asyncReport(
   pipe(
-    create,
+    rageExe,
     mapRej(always(Error("Barf!"))),
-    map(.stdout),
+    map(
+      pipe(
+        .stdout,
+        String.split("\n"),
+      ),
+    ),
   ),
-  "create -h",
-  [#[["--help"], ""]],
+  "--help",
+  [
+    #[
+      ["--help"],
+      [
+        "# `rage`",
+        "",
+        "A tool for bootstrapping madlib projects",
+        "",
+        "## `rage create`",
+        "",
+        "--name / -n",
+        "  string",
+        "  The name of the project",
+        "",
+        "--description / -d / --desc",
+        "  string",
+        "  Describe the project",
+        "",
+        "--ignore / -i",
+        "  string",
+        "  A path to a .gitignore source",
+        "",
+        "--aliases / -a",
+        "  boolean",
+        "  Use `importAliases` in madlib.json?",
+        "",
+        "--git / -g",
+        "  boolean",
+        "  Run git init and pull .gitignore?",
+        "",
+        "--kind / -k",
+        "  string",
+        "  What kind of project is this? (tool / library / other",
+        "",
+        "--createRepo / -r",
+        "  boolean",
+        "  Should we create a new repo? (Requires `gh` configuration)",
+        "",
+        "--dryRun / --safe / -s",
+        "  boolean",
+        "  Should we print commands rather than running them?",
+        "",
+        "--visibility / -p",
+        "  boolean",
+        "  Set the access level of the repo (Only applied when `createRepo` is true)",
+        "",
+        "--configFile / -f",
+        "  string",
+        "  Load a rage config file",
+      ],
+    ],
+  ],
 )

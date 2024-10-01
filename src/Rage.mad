@@ -33,16 +33,12 @@ printHelp = () => pipe(
 main = (args) => {
   pipe(
     List.drop(1),
-    IO.pTrace("RAWWWW"),
     where {
       [cmd, ...rawArgs] =>
-        do {
-          IO.pTrace("CMD?", cmd)
-          return if (cmd == "create") {
-            cmdCreate(rawArgs)
-          } else {
-            printHelp()
-          }
+        if (cmd == "create") {
+          cmdCreate(rawArgs)
+        } else {
+          printHelp()
         }
 
       _ =>
