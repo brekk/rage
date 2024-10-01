@@ -1,7 +1,7 @@
 import type { RageDef } from "@/CmdCreate/Config"
 import type { Visibility } from "@/Github"
 
-import { mapLeft } from "Either"
+import { Right, mapLeft } from "Either"
 import List from "List"
 import { Just, Nothing } from "Maybe"
 import { toLower } from "String"
@@ -9,6 +9,7 @@ import { toLower } from "String"
 import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
 
 import { Library, Other, Tool } from "@/CmdCreate/Config"
+import { readConfigFile } from "@/ConfigFile"
 import { Internal, Private, Public } from "@/Github"
 
 
@@ -44,6 +45,7 @@ DEFAULT_RAGE_DEF = {
   configFile: Nothing,
 }
 
+
 firstPass = (agg, flag) => where(flag) {
   Flag(k, v) =>
     if (k == "description") {
@@ -60,8 +62,8 @@ firstPass = (agg, flag) => where(flag) {
       v2 = toLower(k)
       visibility = v2 == "public" ? Public : v2 == "private" ? Private : Internal
       return { ...agg, visibility }
-    } else if (k == "configFile") {
-      { ...agg, configFile: Just(v) }
+      // } else if (k == "configFile") {
+      //   { ...agg, configFile: Just(v) }
     } else {
       agg
     }
@@ -80,36 +82,50 @@ firstPass = (agg, flag) => where(flag) {
     }
 }
 
+/*
 secondPass = (inputs) => pipe(
   .configFile,
   where {
     Nothing =>
       inputs
 
-    Just(raw) =>
+    Just(filePath) =>
       where(inputs) {
         { createRepo, description, dryRun, ignore, kind, name, useAliases, useGit, visibility } =>
-          (
-            {
-              ...raw,
-              createRepo,
-              description,
-              dryRun,
-              ignore,
-              kind,
-              name,
-              useAliases,
-              useGit,
-              visibility,
-            }
-          )
+          pipe(
+            readConfigFile,
+            map(
+              where {
+                Right(raw) =>
+                  (
+                    {
+                      ...raw,
+                      createRepo,
+                      description,
+                      dryRun,
+                      ignore,
+                      kind,
+                      name,
+                      useAliases,
+                      useGit,
+                      visibility,
+                    }
+                  )
+
+                _ =>
+                  inputs
+              },
+            ),
+          )(filePath)
       }
   },
 )(inputs)
+*/
 
 export postParse = pipe(
   validate(FLAGS),
   mapLeft(printIssues),
   map(List.reduce(firstPass, DEFAULT_RAGE_DEF)),
-  map(secondPass),
+  // secondPass,
+
 )
