@@ -1,0 +1,10 @@
+import Ext from "@/External"
+
+
+
+export rageExe = Ext.run("rage")
+
+export create = (args) => pipe(
+  mappend(["create"]),
+  rageExe,
+)(args)

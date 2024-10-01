@@ -1,0 +1,19 @@
+import { always } from "Function"
+import { Error } from "Test"
+import { mapRej } from "Wish"
+
+import { asyncReport } from "Study"
+
+import { create, rageExe } from "@/Integration"
+
+
+
+asyncReport(
+  pipe(
+    create,
+    mapRej(always(Error("Barf!"))),
+    map(.stdout),
+  ),
+  "create -h",
+  [#[["--help"], ""]],
+)
