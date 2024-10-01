@@ -1,3 +1,5 @@
+import type { DeclaredFlag, Flag } from "Ensign"
+
 import type { RageDef } from "@/CmdCreate/Config"
 import type { Visibility } from "@/Github"
 
@@ -44,6 +46,7 @@ DEFAULT_RAGE_DEF = {
   configFile: Nothing,
 }
 
+firstPass :: RageDef -> List #[String, String] -> RageDef
 firstPass = (agg, flag) => where(flag) {
   Flag(k, v) =>
     if (k == "description") {
@@ -80,6 +83,7 @@ firstPass = (agg, flag) => where(flag) {
     }
 }
 
+secondPass :: RageDef -> RageDef
 secondPass = (inputs) => pipe(
   .configFile,
   where {
@@ -107,6 +111,7 @@ secondPass = (inputs) => pipe(
   },
 )(inputs)
 
+postParse :: List Flag -> RageDef
 export postParse = pipe(
   validate(FLAGS),
   mapLeft(printIssues),
