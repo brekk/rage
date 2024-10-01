@@ -1,8 +1,12 @@
+import { ifElse } from "Function"
+import { good } from "Wish"
+
 import Ensign from "Ensign"
 
 import { create } from "@/CmdCreate/Actions"
-import { postParse } from "@/CmdCreate/Args"
+import { FLAGS, postParse } from "@/CmdCreate/Args"
 import { handleProjectError, handleProjectStatus } from "@/CmdCreate/Status"
+import { help } from "@/Help"
 import { log } from "@/Log"
 
 
@@ -11,9 +15,13 @@ export cmdCreate = pipe(
   Ensign.parseFlags,
   postParse,
   map(
-    pipe(
-      create,
-      bimap(handleProjectError, handleProjectStatus),
+    ifElse(
+      .help,
+      (_) => good(help("create", FLAGS)),
+      pipe(
+        create,
+        bimap(handleProjectError, handleProjectStatus),
+      ),
     ),
   ),
 )

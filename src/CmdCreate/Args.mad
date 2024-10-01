@@ -22,6 +22,7 @@ import { Internal, Private, Public } from "@/Github"
 
 
 export FLAGS = [
+  flagBoolean("help", ["h"], "Print the help text for `create`"),
   flagString("name", ["n"], "The name of the project"),
   flagString("description", ["d", "desc"], "Describe the project"),
   flagString("ignore", ["i"], "A path to a .gitignore source"),
@@ -35,7 +36,7 @@ export FLAGS = [
     ["p"],
     "Set the access level of the repo (Only applied when `createRepo` is true)",
   ),
-  flagString("configFile", ["f"], "Load a rage config file"),
+  flagString("configFile", ["config", "f"], "Load a rage config file"),
 ]
 
 // TODO: we might we want replace some configuration with a Maybe, so we can encapsulate the idea of something being unset at first
@@ -51,6 +52,7 @@ export DEFAULT_RAGE_DEF = {
   useGit: true,
   visibility: Public,
   configFile: Nothing,
+  help: false,
 }
 
 
@@ -78,7 +80,9 @@ export reifyParsedFlags = (agg, flag) => where(flag) {
     }
 
   FlagToggle(k, v) =>
-    if (k == "aliases") {
+    if (k == "help") {
+      { ...agg, help: v }
+    } else if (k == "aliases") {
       { ...agg, useAliases: v }
     } else if (k == "git") {
       { ...agg, useGit: v }
@@ -129,7 +133,6 @@ readConfigFileAndMerge = (parsedDef, x) => pipe(
     },
   ),
 )(x)
-
 
 applyConfigFile :: RageDef -> RageDef
 export applyConfigFile = (parsedDef) => pipe(

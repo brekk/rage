@@ -1,0 +1,17 @@
+import type { DeclaredFlag } from "Ensign"
+
+import { join } from "String"
+
+import E from "Ensign"
+
+
+
+help :: String -> List DeclaredFlag -> String
+export help = (name, flags) => "## `rage " ++ name ++ "`\n\n" ++ E.printLegend(flags)
+
+multiHelp :: String -> List #[String, List DeclaredFlag] -> String
+export multiHelp = (summary, sections) => pipe(
+  map(where { #[n, f] => help(n, f) }),
+  join("\n"),
+  mappend(summary),
+)(sections)

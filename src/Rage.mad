@@ -9,6 +9,7 @@ import E from "Ensign"
 
 import { cmdCreate } from "@/CmdCreate"
 import CmdCreateArgs from "@/CmdCreate/Args"
+import { multiHelp } from "@/Help"
 
 
 
@@ -23,9 +24,7 @@ deadEnd = Wish.fulfill(
 )
 
 printHelp = () => pipe(
-  map(where { #[n, args] => "## `rage " ++ n ++ "`\n\n" ++ E.printLegend(args) }),
-  String.join("\n"),
-  mappend("# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
+  multiHelp("# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
   Wish.good,
   Right,
 )([#["create", CmdCreateArgs.FLAGS]])

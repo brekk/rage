@@ -13,6 +13,7 @@ export alias RageDef = {
   createRepo :: Boolean,
   description :: String,
   dryRun :: Boolean,
+  help :: Boolean,
   ignore :: String,
   kind :: Project,
   name :: String,
