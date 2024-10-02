@@ -1,7 +1,11 @@
+import type { Either } from "Either"
+
 import type { DeclaredFlag, Flag } from "Ensign"
 
 import type { RageAddDef } from "@/CmdAdd/Config"
 
+import { mapLeft } from "Either"
+import List from "List"
 import { Just, Nothing } from "Maybe"
 
 import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
@@ -66,3 +70,37 @@ export DEFAULT_ADD_DEF = {
   repo: Nothing,
   tag: Nothing,
 }
+
+reifyParsedFlags :: RageAddDef -> Flag -> RageAddDef
+export reifyParsedFlags = (agg, flag) => where(flag) {
+  Flag(k, v) =>
+    if (k == "archivePattern") {
+      { ...agg, archivePattern: v }
+    } else if (k == "domain") {
+      { ...agg, domain: Just(v) }
+    } else if (k == "repo") {
+      { ...agg, repo: Just(v) }
+    } else if (k == "tag") {
+      { ...agg, tag: Just(v) }
+    } else {
+      agg
+    }
+
+  FlagToggle(k, v) =>
+    if (k == "help") {
+      { ...agg, help: v }
+    } else if (k == "useColor") {
+      { ...agg, useColor: v }
+    } else if (k == "save") {
+      { ...agg, save: v }
+    } else {
+      agg
+    }
+}
+
+postParse :: List Flag -> Either String RageAddDef
+export postParse = pipe(
+  validate(FLAGS),
+  mapLeft(printIssues),
+  map(List.reduce(reifyParsedFlags, DEFAULT_ADD_DEF)),
+)

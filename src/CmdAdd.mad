@@ -1,0 +1,20 @@
+import IO from "IO"
+import { good } from "Wish"
+
+import E from "Ensign"
+
+import { postParse } from "@/CmdAdd/Args"
+
+
+
+export cmdAdd = pipe(
+  E.parseFlags,
+  postParse,
+  map(
+    pipe(
+      IO.pTrace("parsed!"),
+      show,
+      good,
+    ),
+  ),
+)

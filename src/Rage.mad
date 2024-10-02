@@ -7,6 +7,8 @@ import Wish from "Wish"
 
 import E from "Ensign"
 
+import { cmdAdd } from "@/CmdAdd"
+import CmdAddArgs from "@/CmdAdd/Args"
 import { cmdCreate } from "@/CmdCreate"
 import CmdCreateArgs from "@/CmdCreate/Args"
 import { multiHelp } from "@/Help"
@@ -28,7 +30,7 @@ printHelp = () => pipe(
   multiHelp(true, "# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
   Wish.good,
   Right,
-)([#["create", CmdCreateArgs.FLAGS]])
+)([#["create", CmdCreateArgs.FLAGS], #["add", CmdAddArgs.FLAGS]])
 
 main = (args) => {
   pipe(
@@ -37,6 +39,8 @@ main = (args) => {
       [cmd, ...rawArgs] =>
         if (cmd == "create") {
           cmdCreate(rawArgs)
+        } else if (cmd == "add" || cmd == "install") {
+          cmdAdd(rawArgs)
         } else {
           printHelp()
         }
@@ -46,5 +50,4 @@ main = (args) => {
     },
     map(deadEnd),
   )(args)
-  // deadEnd 
 }
