@@ -1,0 +1,17 @@
+import type { Wish } from "Wish"
+
+
+
+// import type { StatusFail, StatusPass } from 
+
+export alias RageCreateDef = {
+  archivePattern :: String,
+  domain :: String,
+  help :: Boolean,
+  repo :: String,
+  save :: Boolean,
+  tag :: String,
+  useColor :: Boolean,
+}
+
+// export alias RageAddState = Wish StatusFail StatusPass

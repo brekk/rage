@@ -1,0 +1,55 @@
+import type { DeclaredFlag, Flag } from "Ensign"
+
+import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
+
+
+
+/*
+currently our references look like this:
+
+// https://github.com/brekk/study/archive/refs/tags/v0.0.3.zip
+
+it'd be nice to be able to write:
+
+> rage add study@0.0.3
+
+but until we have a registry, that's too little info
+
+> rage add --repo brekk/study --from github --tag v0.0.3
+
+and then maybe
+
+> rage add --repo brekk/study --from github --tag v0.0.3 --save-as study
+
+where the save-as flag keeps it around so that you could later do
+
+> rage add --alias study --tag v0.0.5
+
+We also currently use a specific archive pattern that github supports,
+but we probably need a more generic solution
+*/
+
+
+export FLAGS = [
+  flagBoolean("color", ["C"], "Use color when printing"),
+  flagBoolean("help", ["h"], "Print the help text for `add`"),
+  flagString(
+    "domain",
+    ["from", "d"],
+    "What domain should we use for dependencies? (Default: github.com)",
+  ),
+  flagString("repo", ["r"], "Where is this dependency located?"),
+  flagString("tag", ["t"], "What tag should we use for this dependency?"),
+  flagString(
+    "archivePattern",
+    ["a"],
+    "What archive pattern should we use? (default: https://<domain>/<repo>/archive/refs/tags/<tag>.zip)",
+  ),
+  flagBoolean(
+    "save",
+    ["s"],
+    "Should we save this dependency for easy lookup later? (Adds an entry to a `rage.json` config file.)",
+  ),
+]
+
+DEFAULT_ADD_DEF = {}
