@@ -15,13 +15,13 @@ export cmdCreate = pipe(
   Ensign.parseFlags,
   postParse,
   map(
-    ifElse(
+    (raw) => ifElse(
       .help,
-      (_) => good(help("create", FLAGS)),
+      (_) => good(help(raw.useColor, "create", FLAGS)),
       pipe(
         create,
         bimap(handleProjectError, handleProjectStatus),
       ),
-    ),
+    )(raw),
   ),
 )

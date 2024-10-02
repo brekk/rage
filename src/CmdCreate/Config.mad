@@ -18,6 +18,7 @@ export alias RageDef = {
   kind :: Project,
   name :: String,
   useAliases :: Boolean,
+  useColor :: Boolean,
   useGit :: Boolean,
   visibility :: Visibility,
 }

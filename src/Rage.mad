@@ -24,7 +24,8 @@ deadEnd = Wish.fulfill(
 )
 
 printHelp = () => pipe(
-  multiHelp("# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
+  // we print help with color because we haven't been told not to
+  multiHelp(true, "# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
   Wish.good,
   Right,
 )([#["create", CmdCreateArgs.FLAGS]])

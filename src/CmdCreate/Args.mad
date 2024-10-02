@@ -22,6 +22,7 @@ import { Internal, Private, Public } from "@/Github"
 
 
 export FLAGS = [
+  flagBoolean("color", ["C"], "Use color when printing"),
   flagBoolean("help", ["h"], "Print the help text for `create`"),
   flagString("name", ["n"], "The name of the project"),
   flagString("description", ["d", "desc"], "Describe the project"),
@@ -48,6 +49,7 @@ export DEFAULT_RAGE_DEF = {
   ignore: "https://raw.githubusercontent.com/madlib-lang/.gitignore/main/mad-ignore",
   kind: Library,
   name: "",
+  useColor: true,
   useAliases: true,
   useGit: true,
   visibility: Public,

@@ -6,12 +6,15 @@ import E from "Ensign"
 
 
 
-help :: String -> List DeclaredFlag -> String
-export help = (name, flags) => "## `rage " ++ name ++ "`\n\n" ++ E.printLegend(flags)
+help :: Boolean -> String -> List DeclaredFlag -> String
+export help = (withColor, name, flags) => "## `rage "
+    ++ name
+    ++ "`\n\n"
+    ++ (withColor ? E.printLegendWithColor : E.printLegend)(flags)
 
-multiHelp :: String -> List #[String, List DeclaredFlag] -> String
-export multiHelp = (summary, sections) => pipe(
-  map(where { #[n, f] => help(n, f) }),
+multiHelp :: Boolean -> String -> List #[String, List DeclaredFlag] -> String
+export multiHelp = (withColor, summary, sections) => pipe(
+  map(where { #[n, f] => help(withColor, n, f) }),
   join("\n"),
   mappend(summary),
 )(sections)
