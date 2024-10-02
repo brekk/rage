@@ -1,5 +1,9 @@
 import type { DeclaredFlag, Flag } from "Ensign"
 
+import type { RageAddDef } from "@/CmdAdd/Config"
+
+import { Just, Nothing } from "Maybe"
+
 import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
 
 
@@ -52,4 +56,13 @@ export FLAGS = [
   ),
 ]
 
-DEFAULT_ADD_DEF = {}
+DEFAULT_ADD_DEF :: RageAddDef
+export DEFAULT_ADD_DEF = {
+  archivePattern: "https://<domain>/<repo>/archive/refs/tags/<tag>.zip",
+  domain: Just("github.com"),
+  save: false,
+  help: false,
+  useColor: true,
+  repo: Nothing,
+  tag: Nothing,
+}

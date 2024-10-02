@@ -1,0 +1,30 @@
+import type { Maybe } from "Maybe"
+
+import { Just, Nothing } from "Maybe"
+import String from "String"
+
+
+
+// default archive pattern:
+// "https://<domain>/<repo>/archive/refs/tags/<tag>.zip"
+
+validateArchivePattern :: String -> Boolean
+export validateArchivePattern = (raw) => String.match("<domain>", raw)
+    && String.match("<repo>", raw)
+    && String.match("<tag>", raw)
+
+_archivePattern :: String -> String -> String -> String -> String
+export _archivePattern = (ptrn, domain, repo, tag) => pipe(
+  String.replace("<domain>", domain),
+  String.replace("<repo>", repo),
+  String.replace("<tag>", tag),
+)(ptrn)
+
+archivePattern :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe String
+export archivePattern = (p, d, r, t) => where(#[d, r, t]) {
+  #[Just(domain), Just(repo), Just(tag)] =>
+    validateArchivePattern(p) ? Just(_archivePattern(p, domain, repo, tag)) : Nothing
+
+  _ =>
+    Nothing
+}

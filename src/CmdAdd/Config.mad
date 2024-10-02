@@ -1,16 +1,17 @@
+import type { Maybe } from "Maybe"
 import type { Wish } from "Wish"
 
 
 
 // import type { StatusFail, StatusPass } from 
 
-export alias RageCreateDef = {
+export alias RageAddDef = {
   archivePattern :: String,
-  domain :: String,
+  domain :: Maybe String,
   help :: Boolean,
-  repo :: String,
+  repo :: Maybe String,
   save :: Boolean,
-  tag :: String,
+  tag :: Maybe String,
   useColor :: Boolean,
 }
 
