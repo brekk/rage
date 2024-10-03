@@ -1,0 +1,8 @@
+export _dependencyJson = (url, description, minVersion) => `{
+  "url": "${url}",
+  "description": "${description}",
+  "minVersion": "${minVersion}"
+}`
+
+export readMadlibJson = () => {}
+export addDependency = () => {}

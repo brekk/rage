@@ -2,14 +2,14 @@ import { EQ, GT, LT } from "Compare"
 
 import { report } from "Study"
 
-import { Dependency, Version, abstract, ghReleaseUrl } from "@/Dependency"
+import { Dependency, Version, concrete, ghReleaseUrl } from "@/Dependency"
 import { showVersion } from "@/Dependency/Version"
 
 
 
 report(
-  abstract,
-  "abstract",
+  concrete,
+  "concrete",
   [
     #[
       {

@@ -1,0 +1,53 @@
+import type { Either } from "Either"
+import type { Maybe } from "Maybe"
+
+import type { StaticDependency } from "@/Dependency"
+import type { MadJson, MadPackage } from "@/MadlibJson/Types"
+
+import Json from "Json/Parse"
+
+
+
+// concrete function results
+
+__json :: String
+  -> String
+  -> String
+  -> Maybe String
+  -> Maybe String
+  -> Maybe (List StaticDependency)
+  -> MadJson
+__json = (name, version, main, bin, madlibVersion, deps) => (
+  { main, bin, madlibVersion, name, version, dependencies: deps }
+)
+
+__dependency :: String -> String -> String -> StaticDependency
+__dependency = (minVersion, url, description) => ({ minVersion, url, description })
+
+dependency :: Json.Parser StaticDependency
+export dependency = Json.map3(
+  __dependency,
+  Json.field("minVersion", Json.string),
+  Json.field("url", Json.string),
+  Json.field("description", Json.string),
+)
+
+dependencies :: Json.Parser (List StaticDependency)
+export dependencies = Json.field("dependencies", Json.list(dependency))
+
+// parser
+
+madJson :: Json.Parser MadJson
+export madJson = Json.map6(
+  __json,
+  Json.field("name", Json.string),
+  Json.field("version", Json.string),
+  Json.field("main", Json.string),
+  Json.maybe(Json.field("bin", Json.string)),
+  Json.maybe(Json.field("madlibVersion", Json.string)),
+  Json.maybe(dependencies),
+)
+
+
+madParse :: String -> Either String MadJson
+export madParse = Json.parse(madJson)

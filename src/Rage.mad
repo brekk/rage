@@ -1,17 +1,18 @@
 import { Right } from "Either"
-import { noop } from "Function"
+import { complement, noop } from "Function"
 import IO from "IO"
 import List from "List"
 import String from "String"
 import Wish from "Wish"
 
+import Ensign from "Ensign"
 import E from "Ensign"
 
 import { cmdAdd } from "@/CmdAdd"
 import CmdAddArgs from "@/CmdAdd/Args"
 import { cmdCreate } from "@/CmdCreate"
 import CmdCreateArgs from "@/CmdCreate/Args"
-import { multiHelp } from "@/Help"
+import { hasNoColor, multiHelp } from "@/Help"
 
 
 
@@ -25,9 +26,9 @@ deadEnd = Wish.fulfill(
   ),
 )
 
-printHelp = () => pipe(
+printHelp = (useColor) => pipe(
   // we print help with color because we haven't been told not to
-  multiHelp(true, "# `rage`\n\nA tool for bootstrapping madlib projects\n\n"),
+  multiHelp(useColor, "# `rage`\n\nA tool for bootstrapping madlib projects"),
   Wish.good,
   Right,
 )([#["create", CmdCreateArgs.FLAGS], #["add", CmdAddArgs.FLAGS]])
@@ -37,16 +38,22 @@ main = (args) => {
     List.drop(1),
     where {
       [cmd, ...rawArgs] =>
-        if (cmd == "create") {
-          cmdCreate(rawArgs)
-        } else if (cmd == "add" || cmd == "install") {
-          cmdAdd(rawArgs)
-        } else {
-          printHelp()
+        do {
+          parsed = Ensign.parseFlags(rawArgs)
+          return if (cmd == "create") {
+            cmdCreate(parsed)
+          } else if (cmd == "add" || cmd == "install") {
+            cmdAdd(parsed)
+          } else {
+            pipe(
+              complement(hasNoColor),
+              printHelp,
+            )(parsed)
+          }
         }
 
       _ =>
-        printHelp()
+        printHelp(true)
     },
     map(deadEnd),
   )(args)

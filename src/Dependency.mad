@@ -4,6 +4,8 @@ import type { Version } from "@/Dependency/Version"
 
 import { EQ, GT, LT } from "Compare"
 import {} from "Integer"
+import { find } from "List"
+import { Just, Nothing } from "Maybe"
 import { fromMaybe } from "Maybe"
 import { split } from "String"
 
@@ -28,8 +30,8 @@ export type Dependency
     String,
   )
 
-abstract :: StaticDependency -> Dependency
-export abstract = (x) => Dependency(
+concrete :: StaticDependency -> Dependency
+export concrete = (x) => Dependency(
   x.description,
   pipe(
     scan,
@@ -42,3 +44,15 @@ ghReleaseUrl :: String -> String -> String -> String
 export ghReleaseUrl = (org, repo, s) => `https://github.com/${org}/${repo}/archive/refs/tags/v${
   s
 }.zip`
+
+includes :: String -> List Dependency -> Boolean
+export includes = (n, ds) => pipe(
+  find(where { Dependency(x, _, _) => x == n }),
+  where {
+    Just(_) =>
+      true
+
+    _ =>
+      false
+  },
+)(ds)

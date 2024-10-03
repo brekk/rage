@@ -8,7 +8,7 @@ import File from "File"
 import { always } from "Function"
 import Json from "Json/Parse"
 
-import { dependencies } from "@/MadlibJson"
+import { dependencies } from "@/MadlibJson/Parse"
 
 
 

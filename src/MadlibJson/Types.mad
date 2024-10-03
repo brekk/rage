@@ -1,0 +1,23 @@
+import type { Maybe } from "Maybe"
+
+import type { Dependency, StaticDependency } from "@/Dependency"
+
+
+
+export alias MadJson = {
+  bin :: Maybe String,
+  dependencies :: Maybe (List StaticDependency),
+  madlibVersion :: Maybe String,
+  main :: String,
+  name :: String,
+  version :: String,
+}
+
+export alias MadPackage = {
+  bin :: Maybe String,
+  dependencies :: List Dependency,
+  madlibVersion :: Maybe String,
+  main :: String,
+  name :: String,
+  version :: String,
+}

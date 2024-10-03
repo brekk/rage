@@ -1,63 +1,34 @@
-import type { Either } from "Either"
-import type { Maybe } from "Maybe"
+import type { MadJson, MadPackage } from "@/MadlibJson/Types"
 
-import type { StaticDependency } from "@/Dependency"
+import { fromMaybe } from "Maybe"
 
-import { Left, Right } from "Either"
-import Json from "Json/Parse"
-
+import Deps from "@/Dependency"
+import { madParse } from "@/MadlibJson/Parse"
 
 
-export alias MadJson = {
-  bin :: Maybe String,
-  dependencies :: Maybe (List StaticDependency),
-  madlibVersion :: Maybe String,
-  main :: String,
-  name :: String,
-  version :: String,
+
+export parse = madParse
+
+concrete :: MadJson -> MadPackage
+export concrete = where {
+  { bin, dependencies, madlibVersion, main, name, version } =>
+    (
+      {
+        bin,
+        madlibVersion,
+        main,
+        name,
+        version,
+        dependencies: pipe(
+          map(map(Deps.concrete)),
+          fromMaybe([]),
+        )(dependencies),
+      }
+    )
 }
 
-// concrete function results
-
-__json :: String
-  -> String
-  -> String
-  -> Maybe String
-  -> Maybe String
-  -> Maybe (List StaticDependency)
-  -> MadJson
-__json = (name, version, main, bin, madlibVersion, deps) => (
-  { main, bin, madlibVersion, name, version, dependencies: deps }
-)
-
-__dependency :: String -> String -> String -> StaticDependency
-__dependency = (minVersion, url, description) => ({ minVersion, url, description })
-
-dependency :: Json.Parser StaticDependency
-export dependency = Json.map3(
-  __dependency,
-  Json.field("minVersion", Json.string),
-  Json.field("url", Json.string),
-  Json.field("description", Json.string),
-)
-
-dependencies :: Json.Parser (List StaticDependency)
-export dependencies = Json.field("dependencies", Json.list(dependency))
-
-// parser
-
-madJson :: Json.Parser MadJson
-export madJson = Json.map6(
-  __json,
-  Json.field("name", Json.string),
-  Json.field("version", Json.string),
-  Json.field("main", Json.string),
-  Json.maybe(Json.field("bin", Json.string)),
-  Json.maybe(Json.field("madlibVersion", Json.string)),
-  Json.maybe(dependencies),
-)
-
-export alias MadPackage = Either String MadJson
-
-madParse :: String -> MadPackage
-export madParse = Json.parse(madJson)
+hasDependency :: MadPackage -> String -> Boolean
+export hasDependency = (json, dep) => pipe(
+  .dependencies,
+  Deps.includes(dep),
+)(json)

@@ -1,20 +1,27 @@
+import { ifElse } from "Function"
 import IO from "IO"
 import { good } from "Wish"
 
 import E from "Ensign"
 
 import { postParse } from "@/CmdAdd/Args"
+import { FLAGS } from "@/CmdAdd/Args"
+import { help } from "@/Help"
 
 
 
 export cmdAdd = pipe(
-  E.parseFlags,
+  // E.parseFlags,
   postParse,
   map(
-    pipe(
-      IO.pTrace("parsed!"),
-      show,
-      good,
-    ),
+    (raw) => ifElse(
+      .help,
+      (_) => good(help(raw.useColor, "add", FLAGS)),
+      pipe(
+        IO.pTrace("parsed!"),
+        show,
+        good,
+      ),
+    )(raw),
   ),
 )

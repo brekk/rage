@@ -12,7 +12,7 @@ import { log } from "@/Log"
 
 
 export cmdCreate = pipe(
-  Ensign.parseFlags,
+  // Ensign.parseFlags,
   postParse,
   map(
     (raw) => ifElse(
