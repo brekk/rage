@@ -6,10 +6,14 @@ import { fulfill } from "Wish"
 import {
   readConfigFile,
 } from "@/ConfigFile"
+import { Dependency } from "@/Dependency"
+import { Version } from "@/Dependency/Version"
+import Json from "@/MadlibJson"
+import MadJson from "@/MadlibJson"
 
 
 
-main = () => {
+readRageJson = () => {
   undertaker = fulfill(
     pipe(
       IO.pTrace("BAD!"),
@@ -26,4 +30,21 @@ main = () => {
     readConfigFile,
     undertaker,
   )("./example.rage.json")
+}
+
+main = () => {
+  pipe(
+    MadJson.readFile,
+    map(map(Json.ensureDependency($, Dependency("skippy", Version(0, 1, 2), "urlurlurl")))),
+    fulfill(
+      pipe(
+        IO.pTrace("BAD"),
+        noop,
+      ),
+      pipe(
+        IO.pTrace("GOOD"),
+        noop,
+      ),
+    ),
+  )("madlib.json")
 }

@@ -1,9 +1,16 @@
+import type { Either } from "Either"
+import type { Error } from "File"
+import type { Wish } from "Wish"
+
 import type { Dependency } from "@/Dependency"
 import type { MadJson, MadPackage } from "@/MadlibJson/Types"
 
+import { Left, Right, fromRight, mapLeft } from "Either"
+import File from "File"
 import { always, ifElse, when } from "Function"
 import List from "List"
 import { fromMaybe } from "Maybe"
+import { bad, good, mapRej } from "Wish"
 
 import Deps from "@/Dependency"
 import { madParse } from "@/MadlibJson/Parse"
@@ -56,3 +63,15 @@ export ensureDependency = (json, dep) => ifElse(
   changeDependency(json),
   addDependency(json),
 )(dep)
+
+readFile :: String -> Wish String (Either String MadPackage)
+export readFile = (filePath) => pipe(
+  File.read,
+  mapRej(always(`Unable to read ${filePath}`)),
+  map(
+    pipe(
+      madParse,
+      map(concrete),
+    ),
+  ),
+)(filePath)
