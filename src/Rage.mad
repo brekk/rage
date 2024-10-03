@@ -2,11 +2,9 @@ import { Right } from "Either"
 import { complement, noop } from "Function"
 import IO from "IO"
 import List from "List"
-import String from "String"
 import Wish from "Wish"
 
 import Ensign from "Ensign"
-import E from "Ensign"
 
 import { cmdAdd } from "@/CmdAdd"
 import CmdAddArgs from "@/CmdAdd/Args"

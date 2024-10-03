@@ -1,9 +1,9 @@
 import type { Maybe } from "Maybe"
 import type { Wish } from "Wish"
 
+import type { StatusFail, StatusPass } from "@/CmdAdd/Status"
 
 
-// import type { StatusFail, StatusPass } from 
 
 export alias RageAddDef = {
   archivePattern :: String,
@@ -15,4 +15,4 @@ export alias RageAddDef = {
   useColor :: Boolean,
 }
 
-// export alias RageAddState = Wish StatusFail StatusPass
+export alias RageAddState = Wish StatusFail StatusPass

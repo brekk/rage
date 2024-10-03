@@ -56,3 +56,15 @@ export includes = (n, ds) => pipe(
       false
   },
 )(ds)
+
+equals :: Dependency -> Dependency -> Boolean
+export equals = (a, b) => where(#[a, b]) {
+  #[Dependency(d, _, _), Dependency(d2, _, _)] =>
+    d == d2
+}
+
+description :: Dependency -> String
+export description = where {
+  Dependency(x, _, _) =>
+    x
+}

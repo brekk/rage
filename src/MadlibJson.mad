@@ -1,5 +1,8 @@
+import type { Dependency } from "@/Dependency"
 import type { MadJson, MadPackage } from "@/MadlibJson/Types"
 
+import { always, ifElse, when } from "Function"
+import List from "List"
 import { fromMaybe } from "Maybe"
 
 import Deps from "@/Dependency"
@@ -27,8 +30,29 @@ export concrete = where {
     )
 }
 
-hasDependency :: MadPackage -> String -> Boolean
+hasDependency :: MadPackage -> Dependency -> Boolean
 export hasDependency = (json, dep) => pipe(
   .dependencies,
-  Deps.includes(dep),
+  Deps.includes(Deps.description(dep)),
 )(json)
+
+changeDependency :: MadPackage -> Dependency -> MadPackage
+export changeDependency = (json, updatedDep) => pipe(
+  .dependencies,
+  map(when(Deps.equals(updatedDep), always(updatedDep))),
+  (dx) => ({ ...json, dependencies: dx }),
+)(json)
+
+addDependency :: MadPackage -> Dependency -> MadPackage
+addDependency = (json, dep) => pipe(
+  .dependencies,
+  List.append(dep),
+  (dx) => ({ ...json, dependencies: dx }),
+)(json)
+
+ensureDependency :: MadPackage -> Dependency -> MadPackage
+export ensureDependency = (json, dep) => ifElse(
+  hasDependency(json),
+  changeDependency(json),
+  addDependency(json),
+)(dep)

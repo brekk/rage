@@ -1,0 +1,9 @@
+import { Left, Right } from "Either"
+import {} from "Wish"
+
+import { signal } from "@/Wish"
+
+
+
+export type StatusFail = StatusFail
+export type StatusPass = StatusPass
