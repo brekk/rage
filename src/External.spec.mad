@@ -5,7 +5,7 @@ import { chainRej, good, mapRej } from "Wish"
 
 import { asyncReport, caseN2, report } from "Study"
 
-import { exists, run, walk } from "@/External"
+import { exists, fileExists, run, walk } from "@/External"
 
 
 
@@ -30,4 +30,14 @@ asyncReport(
   ),
   "walk - missing command",
   [#["zipzapzop", "Can't call zipzapzop remote"]],
+)
+
+asyncReport(
+  pipe(
+    fileExists,
+    map(IO.pTrace("RAW!")),
+    mapRej(IO.pTrace("BAD")),
+  ),
+  "fileExists",
+  [#["madlib.json", true], #["skibbledibble.json", false]],
 )

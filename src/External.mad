@@ -24,9 +24,10 @@ export run = (cmd, args) => {
 
 export which = run("which")
 
-export exists = pipe(
+
+_existenz = (fn) => pipe(
   of,
-  which,
+  fn,
   map(
     pipe(
       .exitCode,
@@ -41,6 +42,11 @@ export exists = pipe(
     ),
   ),
 )
+
+
+export exists = _existenz(which)
+export fileExists = _existenz(run("ls"))
+
 
 // it's like run, but like, slower and safer
 walk :: String -> List String -> CommandWish
@@ -63,6 +69,9 @@ export walk = (cmd, args) => pipe(
     },
   ),
 )(cmd)
+
+
+
 
 export gh = run("gh")
 export curl = run("curl")
