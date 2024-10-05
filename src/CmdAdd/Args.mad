@@ -62,7 +62,7 @@ export FLAGS = [
 
 DEFAULT_ADD_DEF :: RageAddDef
 export DEFAULT_ADD_DEF = {
-  archivePattern: "https://<domain>/<repo>/archive/refs/tags/<tag>.zip",
+  archivePattern: "https://<domain>/<repo>/archive/refs/tags/v<tag>.zip",
   domain: Just("github.com"),
   save: false,
   help: false,

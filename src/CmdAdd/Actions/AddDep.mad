@@ -1,8 +1,48 @@
-export _dependencyJson = (url, description, minVersion) => `{
+import type { Maybe } from "Maybe"
+
+import type { Dependency } from "@/Dependency"
+
+import { last } from "List"
+import { Just, Nothing } from "Maybe"
+import { split } from "String"
+
+import { Dependency } from "@/Dependency"
+import Version from "@/Dependency/Version"
+import { applyArchivePattern } from "@/StringTemplate"
+
+
+
+export _dependencyJson = (description, minVersion, url) => `{
   "url": "${url}",
   "description": "${description}",
   "minVersion": "${minVersion}"
 }`
 
-export readMadlibJson = () => {}
-export addDependency = () => {}
+/*
+chain(
+  pipe(
+  split("/"),
+  last,
+  ),
+  r,
+)
+*/
+
+reifyDependency :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe Dependency
+export reifyDependency = (p, d, r, t) => where(#[
+  applyArchivePattern(p, d, r, t),
+  chain(Version.parse, t),
+  r,
+]) {
+  #[Just(url), Just(version), Just(desc)] =>
+    Just(Dependency(desc, version, url))
+
+  _ =>
+    Nothing
+}
+
+dependencyToJson :: Dependency -> String
+export dependencyToJson = where {
+  Dependency(desc, version, url) =>
+    _dependencyJson(desc, Version.showVersion(version), url)
+}

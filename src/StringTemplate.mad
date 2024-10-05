@@ -20,8 +20,8 @@ export _archivePattern = (ptrn, domain, repo, tag) => pipe(
   String.replace("<tag>", tag),
 )(ptrn)
 
-archivePattern :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe String
-export archivePattern = (p, d, r, t) => where(#[d, r, t]) {
+applyArchivePattern :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe String
+export applyArchivePattern = (p, d, r, t) => where(#[d, r, t]) {
   #[Just(domain), Just(repo), Just(tag)] =>
     validateArchivePattern(p) ? Just(_archivePattern(p, domain, repo, tag)) : Nothing
 
