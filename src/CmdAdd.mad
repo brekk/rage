@@ -1,12 +1,21 @@
+import type { Either } from "Either"
+import type { Wish } from "Wish"
+
+import type { Flag } from "Ensign"
+
+import type { RageAddDef } from "@/CmdAdd/Config"
+
 import { ifElse } from "Function"
 import IO from "IO"
-import { good } from "Wish"
+import { fromMaybe } from "Maybe"
+import { bad, good } from "Wish"
 
 import E from "Ensign"
 
 import { dependencyToJson, reifyDependency } from "@/CmdAdd/Actions/AddDep"
 import { postParse } from "@/CmdAdd/Args"
 import { FLAGS } from "@/CmdAdd/Args"
+import { fileExists } from "@/External"
 import { help } from "@/Help"
 
 
@@ -14,21 +23,46 @@ import { help } from "@/Help"
 // NB: We only wanna support things when we're in the
 // same folder as a madlib.json file
 
-_invoke = (raw) => ifElse(
-  .help,
-  (_) => good(help(raw.useColor, "add", FLAGS)),
-  where {
-    { archivePattern, domain, repo, tag } =>
-      pipe(
-        reifyDependency(archivePattern, domain, repo),
-        IO.pTrace("parsed!"),
-        map(dependencyToJson),
-        show,
-        good,
-      )(tag)
-  },
-)(raw)
+processDef :: RageAddDef -> Wish String String
+processDef = where {
+  { archivePattern, domain, repo, tag } =>
+    pipe(
+      reifyDependency(archivePattern, domain, repo),
+      // Maybe Dependency
+      map(dependencyToJson),
+      // Maybe String
+      show,
+      // fromMaybe(""),
+      good,
+    )(tag)
+}
 
+renderHelp :: RageAddDef -> Wish String String
+renderHelp = pipe(
+  .useColor,
+  help($, "add", FLAGS),
+  good,
+)
+
+ensureMadlibJsonInScope :: RageAddDef -> Wish String RageAddDef
+export ensureMadlibJsonInScope = (def) => do {
+  check <- fileExists("madlib.json")
+  IO.pTrace("CHECK CHECK", check)
+  return check ? good(def) : bad("Unable to find madlib.json!")
+}
+
+_invoke :: RageAddDef -> Wish String String
+_invoke = ifElse(
+  .help,
+  renderHelp,
+  pipe(
+    ensureMadlibJsonInScope,
+    chain(processDef),
+  ),
+)
+
+
+cmdAdd :: List Flag -> Either String (Wish String String)
 export cmdAdd = pipe(
   postParse,
   map(_invoke),

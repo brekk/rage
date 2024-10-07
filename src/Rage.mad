@@ -31,28 +31,30 @@ printHelp = (useColor) => pipe(
   Right,
 )([#["create", CmdCreateArgs.FLAGS], #["add", CmdAddArgs.FLAGS]])
 
-main = (args) => {
-  pipe(
-    List.drop(1),
-    where {
-      [cmd, ...rawArgs] =>
-        do {
-          parsed = Ensign.parseFlags(rawArgs)
-          return if (cmd == "create") {
-            cmdCreate(parsed)
-          } else if (cmd == "add" || cmd == "install") {
-            cmdAdd(parsed)
-          } else {
-            pipe(
-              complement(hasNoColor),
-              printHelp,
-            )(parsed)
-          }
+processArgs = pipe(
+  List.drop(1),
+  where {
+    [cmd, ...rawArgs] =>
+      do {
+        parsed = Ensign.parseFlags(rawArgs)
+        return if (cmd == "create") {
+          cmdCreate(parsed)
+        } else if (cmd == "add" || cmd == "install") {
+          cmdAdd(parsed)
+        } else {
+          pipe(
+            complement(hasNoColor),
+            printHelp,
+          )(parsed)
         }
+      }
 
-      _ =>
-        printHelp(true)
-    },
-    map(deadEnd),
-  )(args)
+    _ =>
+      printHelp(true)
+  },
+  map(deadEnd),
+)
+
+main = (args) => {
+  processArgs(args)
 }
