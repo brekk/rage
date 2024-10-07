@@ -2,9 +2,7 @@ import type { Maybe } from "Maybe"
 
 import type { Dependency } from "@/Dependency"
 
-import { last } from "List"
 import { Just, Nothing } from "Maybe"
-import { split } from "String"
 
 import { Dependency } from "@/Dependency"
 import Version from "@/Dependency/Version"

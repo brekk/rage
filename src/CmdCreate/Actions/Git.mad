@@ -23,7 +23,6 @@ export pullGitignore = pipe(
   statusIgnore,
 )
 
-
 gitInit :: String -> RageState
 gitInit = pipe(
   Git.init,
