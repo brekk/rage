@@ -1,5 +1,6 @@
 import { Left, Right } from "Either"
 import { always } from "Function"
+import IO from "IO"
 import { Just, Nothing } from "Maybe"
 import { Error } from "Test"
 import { chainRej, good, mapRej } from "Wish"
@@ -47,6 +48,7 @@ asyncReport(
 asyncReport(
   pipe(
     MadJson.readFile,
+    map(IO.pTrace("READFILE")),
     ap(
       good(
         (eJson, mDep) => where(#[eJson, mDep]) {
@@ -63,13 +65,15 @@ asyncReport(
     ),
     ap(
       $,
-      good(
-        Just(
-          Dependency(
-            "brekk/ensign",
-            Version(0, 0, 3),
-            "https://github.com/brekk/ensign/archive/refs/tags/v0.0.3.zip",
-          ),
+      pipe(
+        Just,
+        IO.pTrace("JUSTIFIED"),
+        good,
+      )(
+        Dependency(
+          "brekk/ensign",
+          Version(0, 0, 3),
+          "https://github.com/brekk/ensign/archive/refs/tags/v0.0.3.zip",
         ),
       ),
     ),
