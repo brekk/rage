@@ -1,0 +1,56 @@
+import type { MadJson, MadPackage } from "@/MadlibJson/Types"
+
+import List from "List"
+import { Just, Nothing, isJust } from "Maybe"
+import { join } from "String"
+
+import { dependencyToJson } from "@/CmdAdd/Actions/AddDep"
+
+
+
+handleBin = (_b) => #[quote("bin"), quote(_b)]
+
+handleDeps = (_d) => Just(#[
+  quote("dependencies"),
+  pipe(
+    map(dependencyToJson),
+    join(",\n"),
+    mappend("[\n"),
+    mappend($, "\n]"),
+  )(_d),
+])
+
+handleMadlibVersion = (_mV) => #[quote("madlibVersion"), quote(_mV)]
+
+quote :: String -> String
+quote = (x) => `"${x}"`
+
+toJson :: MadPackage -> String
+export toJson = where {
+  { bin, madlibVersion, name, main, version, dependencies } =>
+    do {
+      fields = [
+        Just(#[quote("name"), quote(name)]),
+        Just(#[quote("version"), quote(version)]),
+        Just(#[quote("main"), quote(main)]),
+        map(handleBin, bin),
+        handleDeps(dependencies),
+        map(handleMadlibVersion, madlibVersion),
+      ]
+      return pipe(
+        List.filter(isJust),
+        map(
+          where {
+            Just(#[k, v]) =>
+              `${k}: ${v}`
+
+            _ =>
+              ""
+          },
+        ),
+        join(",\n  "),
+        mappend("{\n"),
+        mappend($, "\n}"),
+      )(fields)
+    }
+}

@@ -6,7 +6,7 @@ import type { Flag } from "Ensign"
 import type { RageAddDef } from "@/CmdAdd/Config"
 
 import { Left, Right } from "Either"
-import { ifElse } from "Function"
+import { always, ifElse } from "Function"
 import IO from "IO"
 import { Just, Nothing, fromMaybe } from "Maybe"
 import { bad, good } from "Wish"
@@ -20,22 +20,23 @@ import { concrete } from "@/Dependency"
 import { fileExists } from "@/External"
 import { help } from "@/Help"
 import MadJson from "@/MadlibJson"
+import { toJson } from "@/MadlibJson/Render"
 
 
 
 // NB: We only wanna support things when we're in the
 // same folder as a madlib.json file
 
-processDef :: RageAddDef -> Wish String String
+// processDef :: RageAddDef -> Wish String String
 processDef = where {
   { archivePattern, domain, repo, tag } =>
     pipe(
       reifyDependency(archivePattern, domain, repo),
       IO.pTrace("REIFIED!"),
       // Maybe Dependency
-      map(dependencyToJson),
+      // map(dependencyToJson),
       // Maybe String
-      show,
+      // show,
       // fromMaybe(""),
       good,
     )(tag)
@@ -92,16 +93,9 @@ _invoke = ifElse(
     ensureMadlibJsonInScope,
     chain(processDef),
     map(IO.pTrace("PROCESSED!")),
-    // map(concrete),
-    // readMadlibJsonAndProcessDependency("madlib.json"),
-
-
-
-
-
-
-
-
+    map(readMadlibJsonAndProcessDependency("madlib.json")),
+    map(map(IO.pTrace(">>>"))),
+    map(always("skippy dippy")),
   ),
 )
 
