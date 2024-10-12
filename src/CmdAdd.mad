@@ -49,11 +49,14 @@ export renderHelp = pipe(
   good,
 )
 
-ensureMadlibJsonInScope :: RageAddDef -> Wish String RageAddDef
-export ensureMadlibJsonInScope = (def) => do {
-  check <- fileExists("madlib.json")
-  return check ? good(def) : bad("Unable to find madlib.json!")
+ensurePathInScope :: String -> a -> Wish String a
+export ensurePathInScope = (filePath, def) => do {
+  check <- fileExists(filePath)
+  return check ? good(def) : bad(`Unable to find ${filePath}!`)
 }
+
+ensureMadlibJsonInScope :: RageAddDef -> Wish String RageAddDef
+export ensureMadlibJsonInScope = ensurePathInScope("madlib.json")
 
 export _safeEnsureDependency = (eJson, mDep) => where(#[eJson, mDep]) {
   #[Right(json), Just(dep)] =>

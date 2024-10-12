@@ -35,6 +35,11 @@ asyncReport(
             Version(0, 0, 3),
             "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.3.zip",
           ),
+          Dependency(
+            "Study",
+            Version(0, 0, 4),
+            "https://github.com/brekk/study/archive/refs/tags/v0.0.4.zip",
+          ),
         ],
         madlibVersion: Nothing,
         main: "src/Library.mad",
@@ -95,6 +100,11 @@ asyncReport(
             "PartyBus",
             Version(0, 0, 3),
             "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.3.zip",
+          ),
+          Dependency(
+            "Study",
+            Version(0, 0, 4),
+            "https://github.com/brekk/study/archive/refs/tags/v0.0.4.zip",
           ),
           Dependency(
             "brekk/ensign",

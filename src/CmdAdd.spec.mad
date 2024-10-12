@@ -4,13 +4,13 @@ import { Just, Nothing } from "Maybe"
 import { Error } from "Test"
 import { good, mapRej } from "Wish"
 
-import { asyncReport, caseN2, caseN3, report } from "Study"
+import { asyncFail, asyncReport, caseN2, caseN3, report } from "Study"
 
 import {
   _invoke,
   _safeEnsureDependency,
   cmdAdd,
-  ensureMadlibJsonInScope,
+  ensurePathInScope,
   processDef,
   readMadlibJsonAndProcessDependency,
   renderHelp,
@@ -42,34 +42,28 @@ asyncReport(
   ],
 )
 
-asyncReport(
+RAGE_ADD_DEF_EXAMPLE = {
+  archivePattern: "<repo><domain><tag>",
+  domain: Just("cool.biz"),
+  help: true,
+  repo: Just("yo"),
+  save: true,
+  tag: Just("huh"),
+  useColor: false,
+}
+
+checkPath = pipe(
+  ensurePathInScope($, RAGE_ADD_DEF_EXAMPLE),
+  mapRej(always(Error("barf!"))),
+)
+asyncReport(checkPath, "ensurePathInScope - happy path", [#["madlib.json", RAGE_ADD_DEF_EXAMPLE]])
+// more like astink, amirite?
+asyncFail(
   pipe(
-    ensureMadlibJsonInScope,
-    mapRej(always(Error("barf!"))),
+    ensurePathInScope("invalid/path/dot.biz"),
   ),
-  "ensureMadlibJsonInScope",
-  [
-    #[
-      {
-        archivePattern: "<repo><domain><tag>",
-        domain: Just("cool.biz"),
-        help: true,
-        repo: Just("yo"),
-        save: true,
-        tag: Just("huh"),
-        useColor: false,
-      },
-      {
-        archivePattern: "<repo><domain><tag>",
-        domain: Just("cool.biz"),
-        help: true,
-        repo: Just("yo"),
-        save: true,
-        tag: Just("huh"),
-        useColor: false,
-      },
-    ],
-  ],
+  "ensurePathInScope - unhappy path",
+  [#[RAGE_ADD_DEF_EXAMPLE, "Unable to find invalid/path/dot.biz!"]],
 )
 
 MADLIB_JSON = {
@@ -119,6 +113,11 @@ asyncReport(
             "PartyBus",
             Version(0, 0, 3),
             "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.3.zip",
+          ),
+          Dependency(
+            "Study",
+            Version(0, 0, 4),
+            "https://github.com/brekk/study/archive/refs/tags/v0.0.4.zip",
           ),
           Dependency("harrier", Version(0, 0, 12), "du bois"),
         ],
