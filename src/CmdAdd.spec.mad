@@ -2,7 +2,7 @@ import { Left, Right } from "Either"
 import { always } from "Function"
 import { Just, Nothing } from "Maybe"
 import { Error } from "Test"
-import { mapRej } from "Wish"
+import { good, mapRej } from "Wish"
 
 import { asyncReport, caseN2, caseN3, report } from "Study"
 
@@ -72,8 +72,7 @@ asyncReport(
   ],
 )
 
-/*
-{
+MADLIB_JSON = {
   bin: Nothing,
   dependencies: [],
   madlibVersion: Nothing,
@@ -81,10 +80,53 @@ asyncReport(
   name: "yoyo",
   version: "0.0.3",
 }
-*/
+report(
+  _safeEnsureDependency($, Just(Dependency("blah", Version(0, 0, 2), "skipskap"))),
+  "_safeEnsureDependency",
+  [
+    #[Left("shit!"), Left("shit!")],
+    #[
+      Right(MADLIB_JSON),
+      Right({ ...MADLIB_JSON, dependencies: [Dependency("blah", Version(0, 0, 2), "skipskap")] }),
+    ],
+  ],
+)
 
 report(
-  _safeEnsureDependency(Just(Dependency("blah", Version(0, 0, 2), "skipskap")), Left("shit")),
-  "_safeEnsureDependency",
-  [],
+  _safeEnsureDependency(Right(MADLIB_JSON)),
+  "_safeEnsureDependency - Nothing",
+  [#[Nothing, Left("Unable to read dependency!")]],
+)
+
+asyncReport(
+  pipe(
+    readMadlibJsonAndProcessDependency("madlib.json"),
+    mapRej(always(Error("unhappy"))),
+  ),
+  "readMadlibJsonAndProcessDependency",
+  [
+    #[
+      Just(Dependency("harrier", Version(0, 0, 12), "du bois")),
+      Right({
+        bin: Just("src/Rage.mad"),
+        dependencies: [
+          Dependency(
+            "Ensign",
+            Version(0, 0, 14),
+            "https://github.com/brekk/ensign/archive/refs/tags/v0.0.14.zip",
+          ),
+          Dependency(
+            "PartyBus",
+            Version(0, 0, 3),
+            "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.3.zip",
+          ),
+          Dependency("harrier", Version(0, 0, 12), "du bois"),
+        ],
+        madlibVersion: Nothing,
+        main: "src/Library.mad",
+        name: "rage",
+        version: "0.0.1",
+      }),
+    ],
+  ],
 )

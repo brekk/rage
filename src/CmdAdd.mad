@@ -55,7 +55,7 @@ export ensureMadlibJsonInScope = (def) => do {
   return check ? good(def) : bad("Unable to find madlib.json!")
 }
 
-export _safeEnsureDependency = (mDep, eJson) => where(#[eJson, mDep]) {
+export _safeEnsureDependency = (eJson, mDep) => where(#[eJson, mDep]) {
   #[Right(json), Just(dep)] =>
     Right(MadJson.ensureDependency(json, dep))
 
@@ -66,28 +66,11 @@ export _safeEnsureDependency = (mDep, eJson) => where(#[eJson, mDep]) {
     Left(x)
 }
 
-export readMadlibJsonAndProcessDependency = (mJsonPath, d) => pipe(
+export readMadlibJsonAndProcessDependency = (jsonPath, d) => pipe(
   MadJson.readFile,
   map(IO.pTrace("READ FILE CALLED")),
-  ap(
-    good(
-      (eJson, mDep) => {
-        IO.pTrace("RAW!", { eJson, mDep })
-        return where(#[eJson, mDep]) {
-          #[Right(json), Just(dep)] =>
-            Right(MadJson.ensureDependency(json, dep))
-
-          #[Right(json), _] =>
-            Left("Unable to read dependency!")
-
-          #[Left(x), _] =>
-            Left(x)
-        }
-      },
-    ),
-  ),
-  ap($, good(d)),
-)(mJsonPath)
+  map(_safeEnsureDependency($, d)),
+)(jsonPath)
 
 // _invoke :: RageAddDef -> Wish String String
 export _invoke = ifElse(
@@ -97,7 +80,7 @@ export _invoke = ifElse(
     ensureMadlibJsonInScope,
     chain(processDef),
     map(IO.pTrace("PROCESSED!")),
-    map(readMadlibJsonAndProcessDependency("madlib.json")),
+    // map(readMadlibJsonAndProcessDependency("madlib.json")),
     map(map(IO.pTrace(">>>"))),
     map(always("skippy dippy")),
   ),
