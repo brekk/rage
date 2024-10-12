@@ -3,14 +3,14 @@ import { Just, Nothing } from "Maybe"
 import { caseN3, report } from "Study"
 
 import { DEFAULT_ADD_DEF } from "@/CmdAdd/Args"
-import { _archivePattern, archivePattern, validateArchivePattern } from "@/StringTemplate"
+import { _archivePattern, applyArchivePattern, validateArchivePattern } from "@/StringTemplate"
 
 
 
 report(
   caseN3(_archivePattern(DEFAULT_ADD_DEF.archivePattern)),
   "_archivePattern",
-  [#[#["domo", "arigato", "taggo"], "https://domo/arigato/archive/refs/tags/taggo.zip"]],
+  [#[#["domo", "arigato", "taggo"], "https://domo/arigato/archive/refs/tags/vtaggo.zip"]],
 )
 
 report(
@@ -20,19 +20,19 @@ report(
 )
 
 report(
-  caseN3(archivePattern(DEFAULT_ADD_DEF.archivePattern)),
-  "archivePattern - inputs",
+  caseN3(applyArchivePattern(DEFAULT_ADD_DEF.archivePattern)),
+  "applyArchivePattern - inputs",
   [
     #[
       #[Just("ziggy"), Just("sobotka"), Just("coat")],
-      Just("https://ziggy/sobotka/archive/refs/tags/coat.zip"),
+      Just("https://ziggy/sobotka/archive/refs/tags/vcoat.zip"),
     ],
     #[#[Nothing, Just("huh"), Nothing], Nothing],
   ],
 )
 
 report(
-  archivePattern($, Just("a"), Just("b"), Just("c")),
-  "archivePattern - pattern",
+  applyArchivePattern($, Just("a"), Just("b"), Just("c")),
+  "applyArchivePattern - pattern",
   [#["zipzapzop", Nothing], #["<repo><domain><tag>", Just("bac")]],
 )
