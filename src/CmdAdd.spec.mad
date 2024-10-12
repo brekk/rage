@@ -1,0 +1,90 @@
+import { Left, Right } from "Either"
+import { always } from "Function"
+import { Just, Nothing } from "Maybe"
+import { Error } from "Test"
+import { mapRej } from "Wish"
+
+import { asyncReport, caseN2, caseN3, report } from "Study"
+
+import {
+  _invoke,
+  _safeEnsureDependency,
+  cmdAdd,
+  ensureMadlibJsonInScope,
+  processDef,
+  readMadlibJsonAndProcessDependency,
+  renderHelp,
+} from "@/CmdAdd"
+import { Dependency } from "@/Dependency"
+import { Version } from "@/Dependency/Version"
+
+
+
+asyncReport(
+  pipe(
+    renderHelp,
+    mapRej(always(Error("barf!"))),
+  ),
+  "renderHelp",
+  [
+    #[
+      {
+        archivePattern: "<repo><domain><tag>",
+        domain: Just("cool.biz"),
+        help: true,
+        repo: Just("yo"),
+        save: true,
+        tag: Just("huh"),
+        useColor: false,
+      },
+      "## `rage add`\n\n--color / -C\n  boolean\n  Use color when printing\n\n--help / -h\n  boolean\n  Print the help text for `add`\n\n--domain / --from / -d\n  string\n  What domain should we use for dependencies? (Default: github.com)\n\n--repo / -r\n  string\n  Where is this dependency located?\n\n--tag / -t\n  string\n  What tag should we use for this dependency?\n\n--archive-pattern / -a\n  string\n  What archive pattern should we use? (default: https://<domain>/<repo>/archive/refs/tags/<tag>.zip)\n\n--save / -s\n  boolean\n  Should we save this dependency for easy lookup later? (Adds an entry to a `rage.json` config file.)",
+    ],
+  ],
+)
+
+asyncReport(
+  pipe(
+    ensureMadlibJsonInScope,
+    mapRej(always(Error("barf!"))),
+  ),
+  "ensureMadlibJsonInScope",
+  [
+    #[
+      {
+        archivePattern: "<repo><domain><tag>",
+        domain: Just("cool.biz"),
+        help: true,
+        repo: Just("yo"),
+        save: true,
+        tag: Just("huh"),
+        useColor: false,
+      },
+      {
+        archivePattern: "<repo><domain><tag>",
+        domain: Just("cool.biz"),
+        help: true,
+        repo: Just("yo"),
+        save: true,
+        tag: Just("huh"),
+        useColor: false,
+      },
+    ],
+  ],
+)
+
+/*
+{
+  bin: Nothing,
+  dependencies: [],
+  madlibVersion: Nothing,
+  main: "yo",
+  name: "yoyo",
+  version: "0.0.3",
+}
+*/
+
+report(
+  _safeEnsureDependency(Just(Dependency("blah", Version(0, 0, 2), "skipskap")), Left("shit")),
+  "_safeEnsureDependency",
+  [],
+)

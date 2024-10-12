@@ -28,7 +28,7 @@ import { toJson } from "@/MadlibJson/Render"
 // same folder as a madlib.json file
 
 // processDef :: RageAddDef -> Wish String String
-processDef = where {
+export processDef = where {
   { archivePattern, domain, repo, tag } =>
     pipe(
       reifyDependency(archivePattern, domain, repo),
@@ -43,7 +43,7 @@ processDef = where {
 }
 
 renderHelp :: RageAddDef -> Wish String String
-renderHelp = pipe(
+export renderHelp = pipe(
   .useColor,
   help($, "add", FLAGS),
   good,
@@ -55,7 +55,7 @@ export ensureMadlibJsonInScope = (def) => do {
   return check ? good(def) : bad("Unable to find madlib.json!")
 }
 
-_safeEnsureDependency = (mDep, eJson) => where(#[eJson, mDep]) {
+export _safeEnsureDependency = (mDep, eJson) => where(#[eJson, mDep]) {
   #[Right(json), Just(dep)] =>
     Right(MadJson.ensureDependency(json, dep))
 
@@ -66,19 +66,23 @@ _safeEnsureDependency = (mDep, eJson) => where(#[eJson, mDep]) {
     Left(x)
 }
 
-readMadlibJsonAndProcessDependency = (mJsonPath, d) => pipe(
+export readMadlibJsonAndProcessDependency = (mJsonPath, d) => pipe(
   MadJson.readFile,
+  map(IO.pTrace("READ FILE CALLED")),
   ap(
     good(
-      (eJson, mDep) => where(#[eJson, mDep]) {
-        #[Right(json), Just(dep)] =>
-          Right(MadJson.ensureDependency(json, dep))
+      (eJson, mDep) => {
+        IO.pTrace("RAW!", { eJson, mDep })
+        return where(#[eJson, mDep]) {
+          #[Right(json), Just(dep)] =>
+            Right(MadJson.ensureDependency(json, dep))
 
-        #[Right(json), _] =>
-          Left("Unable to read dependency!")
+          #[Right(json), _] =>
+            Left("Unable to read dependency!")
 
-        #[Left(x), _] =>
-          Left(x)
+          #[Left(x), _] =>
+            Left(x)
+        }
       },
     ),
   ),
@@ -86,7 +90,7 @@ readMadlibJsonAndProcessDependency = (mJsonPath, d) => pipe(
 )(mJsonPath)
 
 // _invoke :: RageAddDef -> Wish String String
-_invoke = ifElse(
+export _invoke = ifElse(
   .help,
   renderHelp,
   pipe(
