@@ -32,12 +32,6 @@ export processDef = where {
   { archivePattern, domain, repo, tag } =>
     pipe(
       reifyDependency(archivePattern, domain, repo),
-      IO.pTrace("REIFIED!"),
-      // Maybe Dependency
-      // map(dependencyToJson),
-      // Maybe String
-      // show,
-      // fromMaybe(""),
       good,
     )(tag)
 }
