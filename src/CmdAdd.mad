@@ -1,7 +1,7 @@
 import type { Either } from "Either"
 import type { Wish } from "Wish"
 
-import type { Flag } from "Ensign"
+import type { Flag } from "ensign/Flags"
 
 import type { RageAddDef } from "@/CmdAdd/Config"
 

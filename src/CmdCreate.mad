@@ -1,7 +1,7 @@
 import { ifElse } from "Function"
 import { good } from "Wish"
 
-import Ensign from "Ensign"
+import Ensign from "ensign"
 
 import { create } from "@/CmdCreate/Actions"
 import { FLAGS, postParse } from "@/CmdCreate/Args"

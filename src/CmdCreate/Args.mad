@@ -2,7 +2,7 @@ import type { Either } from "Either"
 import type { Error } from "File"
 import type { Wish } from "Wish"
 
-import type { DeclaredFlag, Flag } from "Ensign"
+import type { DeclaredFlag, Flag } from "ensign"
 
 import type { RageDef } from "@/CmdCreate/Config"
 import type { RageConfig } from "@/ConfigFile"

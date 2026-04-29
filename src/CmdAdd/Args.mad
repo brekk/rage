@@ -1,6 +1,6 @@
 import type { Either } from "Either"
 
-import type { DeclaredFlag, Flag } from "Ensign"
+import type { DeclaredFlag, Flag } from "ensign"
 
 import type { RageAddDef } from "@/CmdAdd/Config"
 

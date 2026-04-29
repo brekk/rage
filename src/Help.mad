@@ -1,4 +1,4 @@
-import type { DeclaredFlag, Flag } from "Ensign"
+import type { DeclaredFlag, Flag } from "ensign"
 
 import { any } from "List"
 import { join } from "String"

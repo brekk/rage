@@ -5,3 +5,5 @@
 - [/] - create a config file (library?)
 - [x] - add visibility config to `create`, i.e. `create --public`
 - [ ] - rethink the StatusFail / StatusPass pattern, it should be an aggregated status, not a static one
+- [ ] - add .github workflow stuff
+- [ ] - add LICENSE

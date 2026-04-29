@@ -20,9 +20,9 @@ It would be nice to have some means of injecting status but continue to keep thi
 
 */
 
-export alias Events = #[List (Either a b), List (Either a b)]
+export alias Events a b = #[List (Either a b), List (Either a b)]
 
-aggregate :: Either a b -> Events -> Events
+aggregate :: Either a b -> Events a b -> Events a b
 export aggregate = (x, stack) => where(stack) {
   #[fails, passes] =>
     isLeft(x) ? #[List.append(x, fails), passes] : #[fails, List.append(x, passes)]

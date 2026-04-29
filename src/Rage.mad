@@ -4,7 +4,7 @@ import IO from "IO"
 import List from "List"
 import Wish from "Wish"
 
-import Ensign from "Ensign"
+import Ensign from "ensign"
 
 import { cmdAdd } from "@/CmdAdd"
 import CmdAddArgs from "@/CmdAdd/Args"
