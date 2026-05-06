@@ -7,7 +7,8 @@ import Ext from "@/External"
 
 
 
-_rawJson = (name) => `{
+_rawJson = (name) => (
+  `{
   "name": "${name}",
   "version": "0.0.1",
   "main": "src/Main.mad",
@@ -15,6 +16,7 @@ _rawJson = (name) => `{
     ".": "src"
   }
 }`
+)
 
 createMadlibProject :: RageDef -> RageState
 export createMadlibProject = where {

@@ -25,8 +25,8 @@ handleMadlibVersion = (_mV) => #[quote("madlibVersion"), quote(_mV)]
 quote :: String -> String
 quote = (x) => `"${x}"`
 
-toJson :: MadPackage -> String
-export toJson = where {
+madPkgToJson :: MadPackage -> String
+export madPkgToJson = where {
   { bin, madlibVersion, name, main, version, dependencies } =>
     do {
       fields = [

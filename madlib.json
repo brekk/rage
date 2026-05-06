@@ -7,17 +7,17 @@
     ".": "src"
   },
   "dependencies": [
-{
-      "url": "https://github.com/brekk/mad-at-json/archive/refs/tags/v0.0.1.zip",
+    {
+      "url": "https://github.com/brekk/mad-at-json/archive/refs/tags/v0.0.2.zip",
       "name": "mad-at-json",
       "description": "mad-at-json",
-      "minVersion": "0.0.1"
+      "minVersion": "0.0.2"
     },
     {
-      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.0.14.zip",
+      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.1.0.zip",
       "name": "ensign",
       "description": "ensign",
-      "minVersion": "0.0.14"
+      "minVersion": "0.1.0"
     },
     {
       "url": "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.8.zip",

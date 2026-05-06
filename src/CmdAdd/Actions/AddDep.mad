@@ -16,6 +16,9 @@ export _dependencyJson = (description, minVersion, url) => `{
   "minVersion": "${minVersion}"
 }`
 
+
+
+
 reifyDependency :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe Dependency
 export reifyDependency = (p, d, r, t) => where(#[
   applyArchivePattern(p, d, r, t),
