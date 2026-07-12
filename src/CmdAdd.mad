@@ -12,6 +12,7 @@ import { Just, Nothing, fromMaybe } from "Maybe"
 import { bad, good } from "Wish"
 
 import E from "Ensign"
+import MadJson from "mad-at-json"
 
 import { dependencyToJson, reifyDependency } from "@/CmdAdd/Actions/AddDep"
 import { postParse } from "@/CmdAdd/Args"
@@ -19,7 +20,6 @@ import { FLAGS } from "@/CmdAdd/Args"
 import { concrete } from "@/Dependency"
 import { fileExists } from "@/External"
 import { help } from "@/Help"
-import MadJson from "@/MadlibJson"
 
 
 
@@ -34,23 +34,19 @@ export processDef = where {
       good,
     )(tag)
 }
-
 renderHelp :: RageAddDef -> Wish String String
 export renderHelp = pipe(
   .useColor,
   help($, "add", FLAGS),
   good,
 )
-
 ensurePathInScope :: String -> a -> Wish String a
 export ensurePathInScope = (filePath, def) => do {
   check <- fileExists(filePath)
   return check ? good(def) : bad(`Unable to find ${filePath}!`)
 }
-
 ensureMadlibJsonInScope :: RageAddDef -> Wish String RageAddDef
 export ensureMadlibJsonInScope = ensurePathInScope("madlib.json")
-
 export _safeEnsureDependency = (eJson, mDep) => where(#[eJson, mDep]) {
   #[Right(json), Just(dep)] =>
     Right(MadJson.ensureDependency(json, dep))
@@ -61,13 +57,11 @@ export _safeEnsureDependency = (eJson, mDep) => where(#[eJson, mDep]) {
   #[Left(x), _] =>
     Left(x)
 }
-
 export readMadlibJsonAndProcessDependency = (jsonPath, d) => pipe(
   MadJson.readFile,
   map(IO.pTrace("READ FILE CALLED")),
   map(_safeEnsureDependency($, d)),
 )(jsonPath)
-
 // _invoke :: RageAddDef -> Wish String String
 export _invoke = ifElse(
   .help,
@@ -76,13 +70,11 @@ export _invoke = ifElse(
     ensureMadlibJsonInScope,
     chain(processDef),
     map(IO.pTrace("PROCESSED!")),
-    // map(readMadlibJsonAndProcessDependency("madlib.json")),
+    map(readMadlibJsonAndProcessDependency("madlib.json")),
     map(map(IO.pTrace(">>>"))),
     map(always("skippy dippy")),
   ),
 )
-
-
 // cmdAdd :: List Flag -> Either String (Wish String String)
 export cmdAdd = pipe(
   postParse,

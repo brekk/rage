@@ -1,77 +1,64 @@
 import type { Either } from "Either"
 import type { Error } from "File"
+import type { Maybe } from "Maybe"
 import type { Wish } from "Wish"
 
-import type { Dependency } from "@/Dependency"
-import type { MadJson, MadPackage } from "@/MadlibJson/Types"
+import type { Dependency } from "mad-at-json/Parse/Dependency"
+import type { MadlibDotJson } from "mad-at-json/Parse/MadlibJson"
 
 import { Left, Right, fromRight, mapLeft } from "Either"
 import File from "File"
+import Fn from "Function"
 import { always, ifElse, when } from "Function"
 import List from "List"
+import { Just } from "Maybe"
 import { fromMaybe } from "Maybe"
 import { bad, good, mapRej } from "Wish"
 
-import Deps from "@/Dependency"
-import { madParse } from "@/MadlibJson/Parse"
+import Parsed from "mad-at-json/Parse/Dependency"
+import MadAtJson from "mad-at-json/Parse/MadlibJson"
+import Version from "mad-at-json/Version"
 
 
 
-export parse = madParse
-
-concrete :: MadJson -> MadPackage
-export concrete = where {
-  { bin, dependencies, madlibVersion, main, name, version } =>
-    (
-      {
-        bin,
-        madlibVersion,
-        main,
-        name,
-        version,
-        dependencies: pipe(
-          map(map(Deps.concrete)),
-          fromMaybe([]),
-        )(dependencies),
-      }
-    )
-}
-
-hasDependency :: MadPackage -> Dependency -> Boolean
-export hasDependency = (json, dep) => pipe(
+_deps :: MadlibDotJson -> List Dependency
+_deps = pipe(
   .dependencies,
-  Deps.includes(Deps.description(dep)),
-)(json)
-
-changeDependency :: MadPackage -> Dependency -> MadPackage
-export changeDependency = (json, updatedDep) => pipe(
-  .dependencies,
-  map(when(Deps.equals(updatedDep), always(updatedDep))),
-  (dx) => ({ ...json, dependencies: dx }),
-)(json)
-
-addDependency :: MadPackage -> Dependency -> MadPackage
-addDependency = (json, dep) => pipe(
-  .dependencies,
-  List.append(dep),
-  (dx) => ({ ...json, dependencies: dx }),
-)(json)
-
-ensureDependency :: MadPackage -> Dependency -> MadPackage
-export ensureDependency = (json, dep) => ifElse(
-  hasDependency(json),
-  changeDependency(json),
-  addDependency(json),
+  fromMaybe([]),
+)
+_nameIs :: String -> Dependency -> Boolean
+_nameIs = (x, dep) => pipe(
+  .name,
+  fromMaybe(""),
+  Fn.equals(x),
 )(dep)
-
-readFile :: String -> Wish String (Either String MadPackage)
+_someDepBy = (by, dep, x) => List.any(by(dep), x)
+_someDep = _someDepBy(_nameIs)
+hasDependency :: String -> MadlibDotJson -> Boolean
+export hasDependency = (dep, json) => pipe(
+  _deps,
+  _someDep(dep),
+)(json)
+changeDependency :: (Dependency -> Dependency) -> String -> MadlibDotJson -> MadlibDotJson
+export changeDependency = (mod, x, json) => pipe(
+  _deps,
+  map(Fn.when(_nameIs(x), mod)),
+  Just,
+  (dependencies) => ({ ...json, dependencies }),
+)(json)
+_addDependency :: Dependency -> Maybe (List Dependency) -> Maybe (List Dependency)
+_addDependency = (dep, dependencies) => map(List.append(dep), dependencies)
+addDependency :: Dependency -> MadlibDotJson -> MadlibDotJson
+export addDependency = (dep, json) => (
+  { ...json, dependencies: _addDependency(dep, json.dependencies) }
+)
+ensureDependency :: Dependency -> MadlibDotJson -> MadlibDotJson
+export ensureDependency = (dep, { ...rest, dependencies }) => (
+  { ...rest, dependencies: map(Fn.unless(_someDep(dep.name), List.append(dep)))(dependencies) }
+)
+readFile :: String -> Wish String MadlibDotJson
 export readFile = (filePath) => pipe(
   File.read,
   mapRej(always(`Unable to read ${filePath}`)),
-  map(
-    pipe(
-      madParse,
-      map(concrete),
-    ),
-  ),
+  chain(MadAtJson.parse),
 )(filePath)

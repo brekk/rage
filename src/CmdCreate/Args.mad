@@ -1,19 +1,25 @@
 import type { Either } from "Either"
 import type { Error } from "File"
+import type { Maybe } from "Maybe"
 import type { Wish } from "Wish"
 
-import type { DeclaredFlag, Flag } from "ensign"
+import type { Flag } from "ensign/Flags"
 
 import type { RageDef } from "@/CmdCreate/Config"
 import type { RageConfig } from "@/ConfigFile"
 import type { Visibility } from "@/Github"
 
+import Either from "Either"
 import { Right, mapLeft } from "Either"
 import List from "List"
 import { Just, Nothing } from "Maybe"
 import { toLower } from "String"
 
-import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
+import Declared from "ensign/Declared"
+import { flagBoolean, flagString } from "ensign/Declared/Flags"
+import DPrint from "ensign/Declared/Print"
+import { Flag, FlagToggle } from "ensign/Flags"
+import EFlags from "ensign/Flags"
 
 import { Library, Other, Tool } from "@/CmdCreate/Config"
 import { readConfigFile } from "@/ConfigFile"
@@ -22,7 +28,7 @@ import { Internal, Private, Public } from "@/Github"
 
 
 export FLAGS = [
-  flagBoolean("color", ["C"], "Use color when printing"),
+  flagBoolean("color", ["K"], "Use color when printing"),
   flagBoolean("help", ["h"], "Print the help text for `create`"),
   flagString("name", ["n"], "The name of the project"),
   flagString("description", ["d", "desc"], "Describe the project"),
@@ -39,7 +45,6 @@ export FLAGS = [
   ),
   flagString("configFile", ["config", "f"], "Load a rage config file"),
 ]
-
 // TODO: we might we want replace some configuration with a Maybe, so we can encapsulate the idea of something being unset at first
 DEFAULT_RAGE_DEF :: RageDef
 export DEFAULT_RAGE_DEF = {
@@ -56,8 +61,6 @@ export DEFAULT_RAGE_DEF = {
   configFile: Nothing,
   help: false,
 }
-
-
 reifyParsedFlags :: RageDef -> Flag -> RageDef
 export reifyParsedFlags = (agg, flag) => where(flag) {
   Flag(k, v) =>
@@ -95,8 +98,10 @@ export reifyParsedFlags = (agg, flag) => where(flag) {
     } else {
       agg
     }
-}
 
+  _ =>
+    agg
+}
 mergeConfigFile :: RageDef -> RageConfig -> RageDef
 export mergeConfigFile = (parsedDef, raw) => where(raw) {
   { ignore, useAliases, useGit } =>
@@ -121,7 +126,6 @@ export mergeConfigFile = (parsedDef, raw) => where(raw) {
       }
     )
 }
-
 readConfigFileAndMerge :: RageDef -> String -> Wish Error RageDef
 readConfigFileAndMerge = (parsedDef, x) => pipe(
   readConfigFile,
@@ -135,7 +139,6 @@ readConfigFileAndMerge = (parsedDef, x) => pipe(
     },
   ),
 )(x)
-
 applyConfigFile :: RageDef -> RageDef
 export applyConfigFile = (parsedDef) => pipe(
   .configFile,
@@ -147,11 +150,13 @@ export applyConfigFile = (parsedDef) => pipe(
       readConfigFileAndMerge(parsedDef, filePath)
   },
 )(parsedDef)
-
-postParse :: List Flag -> Either String RageDef
+export parseArgs = pipe(
+  Declared.validate(FLAGS),
+  Either.mapLeft(DPrint.printIssues),
+)
+postParse :: Maybe (List Flag) -> Either String RageDef
 export postParse = pipe(
-  validate(FLAGS),
-  mapLeft(printIssues),
+  parseArgs,
   map(
     pipe(
       List.reduce(reifyParsedFlags, DEFAULT_RAGE_DEF),

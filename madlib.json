@@ -8,16 +8,16 @@
   },
   "dependencies": [
     {
-      "url": "https://github.com/brekk/mad-at-json/archive/refs/tags/v0.0.2.zip",
+      "url": "https://github.com/brekk/mad-at-json/archive/refs/tags/v0.0.4.zip",
       "name": "mad-at-json",
       "description": "mad-at-json",
-      "minVersion": "0.0.2"
+      "minVersion": "0.0.4"
     },
     {
-      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.1.0.zip",
+      "url": "https://github.com/brekk/ensign/archive/refs/tags/v0.1.1.zip",
       "name": "ensign",
       "description": "ensign",
-      "minVersion": "0.1.0"
+      "minVersion": "0.1.1"
     },
     {
       "url": "https://github.com/brekk/party-bus/archive/refs/tags/v0.0.8.zip",
@@ -26,10 +26,10 @@
       "minVersion": "0.0.8"
     },
     {
-      "url": "https://github.com/brekk/study/archive/refs/tags/v0.0.4.zip",
+      "url": "https://github.com/brekk/study/archive/refs/tags/v0.0.6.zip",
       "name": "Study",
       "description": "Study",
-      "minVersion": "0.0.4"
+      "minVersion": "0.0.6"
     }
   ]
 }

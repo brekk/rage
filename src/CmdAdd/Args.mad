@@ -1,14 +1,18 @@
 import type { Either } from "Either"
 
-import type { DeclaredFlag, Flag } from "ensign"
+import type { Flag } from "ensign/Flags"
 
 import type { RageAddDef } from "@/CmdAdd/Config"
 
-import { mapLeft } from "Either"
+import Either from "Either"
 import List from "List"
 import { Just, Nothing } from "Maybe"
 
-import { Flag, FlagToggle, flagBoolean, flagString, printIssues, validate } from "Ensign"
+import Declared from "ensign/Declared"
+import { flagBoolean, flagString } from "ensign/Declared/Flags"
+import DPrint from "ensign/Declared/Print"
+import { Flag, FlagToggle } from "ensign/Flags"
+import EFlags from "ensign/Flags"
 
 
 
@@ -39,7 +43,7 @@ but we probably need a more generic solution
 
 
 export FLAGS = [
-  flagBoolean("color", ["C"], "Use color when printing"),
+  flagBoolean("color", ["K"], "Use color when printing"),
   flagBoolean("help", ["h"], "Print the help text for `add`"),
   flagString(
     "domain",
@@ -59,7 +63,6 @@ export FLAGS = [
     "Should we save this dependency for easy lookup later? (Adds an entry to a `rage.json` config file.)",
   ),
 ]
-
 DEFAULT_ADD_DEF :: RageAddDef
 export DEFAULT_ADD_DEF = {
   archivePattern: "https://<domain>/<repo>/archive/refs/tags/v<tag>.zip",
@@ -70,7 +73,6 @@ export DEFAULT_ADD_DEF = {
   repo: Nothing,
   tag: Nothing,
 }
-
 reifyParsedFlags :: RageAddDef -> Flag -> RageAddDef
 export reifyParsedFlags = (agg, flag) => where(flag) {
   Flag(k, v) =>
@@ -96,11 +98,15 @@ export reifyParsedFlags = (agg, flag) => where(flag) {
     } else {
       agg
     }
-}
 
-postParse :: List Flag -> Either String RageAddDef
+  _ =>
+    agg
+}
+export parseArgs = pipe(
+  Declared.validate(FLAGS),
+  Either.mapLeft(DPrint.printIssues),
+)
 export postParse = pipe(
-  validate(FLAGS),
-  mapLeft(printIssues),
+  parseArgs,
   map(List.reduce(reifyParsedFlags, DEFAULT_ADD_DEF)),
 )

@@ -1,39 +1,25 @@
 import type { Maybe } from "Maybe"
 
-import type { Dependency } from "@/Dependency"
+import type { Dependency } from "mad-at-json"
 
 import { Just, Nothing } from "Maybe"
 
-import { Dependency } from "@/Dependency"
-import Version from "@/Dependency/Version"
+import { sanitizeUrl } from "mad-at-json/URL"
+import Version from "mad-at-json/Version"
+
 import { applyArchivePattern } from "@/StringTemplate"
 
 
 
-export _dependencyJson = (description, minVersion, url) => `{
-  "url": "${url}",
-  "description": "${description}",
-  "minVersion": "${minVersion}"
-}`
-
-
-
-
-reifyDependency :: String -> Maybe String -> Maybe String -> Maybe String -> Maybe Dependency
+reifyDependency :: String -> Maybe String -> String -> Maybe String -> Maybe Dependency
 export reifyDependency = (p, d, r, t) => where(#[
   applyArchivePattern(p, d, r, t),
   chain(Version.parse, t),
   r,
 ]) {
-  #[Just(url), Just(version), Just(desc)] =>
-    Just(Dependency(desc, version, url))
+  #[Just(url), Just(minVersion), Just(description)] =>
+    Just({ name: r, description, url, minVersion })
 
   _ =>
     Nothing
-}
-
-dependencyToJson :: Dependency -> String
-export dependencyToJson = where {
-  Dependency(desc, version, url) =>
-    _dependencyJson(desc, Version.showVersion(version), url)
 }

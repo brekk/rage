@@ -2,9 +2,10 @@ import { Right } from "Either"
 import { complement, noop } from "Function"
 import IO from "IO"
 import List from "List"
+import { Just } from "Maybe"
 import Wish from "Wish"
 
-import Ensign from "ensign"
+import Ensign from "ensign/Flags"
 
 import { cmdAdd } from "@/CmdAdd"
 import CmdAddArgs from "@/CmdAdd/Args"
@@ -23,14 +24,11 @@ deadEnd = Wish.fulfill(
     IO.put,
   ),
 )
-
 printHelp = (useColor) => pipe(
-  // we print help with color because we haven't been told not to
   multiHelp(useColor, "# `rage`\n\nA tool for bootstrapping madlib projects"),
   Wish.good,
   Right,
 )([#["create", CmdCreateArgs.FLAGS], #["add", CmdAddArgs.FLAGS]])
-
 processArgs = pipe(
   List.drop(1),
   where {
@@ -45,7 +43,7 @@ processArgs = pipe(
           pipe(
             complement(hasNoColor),
             printHelp,
-          )(parsed)
+          )(parsed ?? [])
         }
       }
 
@@ -54,7 +52,6 @@ processArgs = pipe(
   },
   map(deadEnd),
 )
-
 main = (args) => {
   processArgs(args)
 }

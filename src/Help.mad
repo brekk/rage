@@ -1,10 +1,11 @@
-import type { DeclaredFlag, Flag } from "ensign"
+import type { DeclaredFlag } from "ensign/Declared/Flags"
+import type { Flag } from "ensign/Flags"
 
 import { any } from "List"
 import { join } from "String"
 
-import { FlagToggle } from "Ensign"
-import E from "Ensign"
+import EPrint from "ensign/Declared/Print"
+import { FlagToggle } from "ensign/Flags"
 
 
 
@@ -12,20 +13,18 @@ help :: Boolean -> String -> List DeclaredFlag -> String
 export help = (withColor, name, flags) => "## `rage "
     ++ name
     ++ "`\n\n"
-    ++ (withColor ? E.printLegendWithColor : E.printLegend)(flags)
-
+    ++ (withColor ? EPrint.printLegendWithColor : EPrint.printLegend)(flags)
 multiHelp :: Boolean -> String -> List #[String, List DeclaredFlag] -> String
 export multiHelp = (withColor, summary, sections) => pipe(
   map(where { #[n, f] => help(withColor, n, f) }),
   join("\n\n"),
   mappend(summary ++ "\n\n"),
 )(sections)
-
 hasNoColor :: List Flag -> Boolean
 export hasNoColor = any(
   where {
     FlagToggle(k, v) =>
-      !v && (k == "color" || k == "C")
+      !v && (k == "color" || k == "K")
 
     _ =>
       false
